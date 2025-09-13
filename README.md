@@ -1,36 +1,36 @@
-# Emission Prediction and Optimization Framework
+# 排放预测与优化框架
 
-This project demonstrates a minimal workflow for forecasting emissions with machine learning and applying optimization when emissions exceed a threshold.
+本项目展示了一个最小化的工作流程，使用机器学习预测排放，并在排放超出阈值时进行优化。
 
-## Features
-- **Data preprocessing**: missing-value imputation and feature scaling.
-- **EmissionPredictor**: combines RandomForest and XGBoost and reports common metrics.
-- **Process monitoring**: triggers optimization when emissions go beyond a user-defined level.
-- **Particle Swarm Optimization**: tunes process parameters.
-- **Demo script**: generates synthetic data and showcases the complete pipeline.
+## 功能
+- **数据预处理**：缺失值填补和特征缩放。
+- **EmissionPredictor**：结合 RandomForest 与 XGBoost 并报告常见指标。
+- **过程监控**：当排放超过用户设定的阈值时触发优化。
+- **粒子群优化**：调节工艺参数。
+- **演示脚本**：生成合成数据并展示完整流程。
 
-## Installation
-1. Ensure Python 3.12+ is installed.
-2. Install the dependencies:
+## 安装
+1. 确保已安装 Python 3.12+。
+2. 安装依赖：
    ```bash
    pip install numpy pandas scikit-learn xgboost shap
    ```
-   The `shap` library is optional; if it is not installed, SHAP-based explanations are skipped.
+   `shap` 库为可选项，未安装时将跳过基于 SHAP 的解释。
 
-## Usage
-Run the demo script:
+## 使用方法
+运行演示脚本：
 ```bash
 python main.py
 ```
-The script will train the models, print evaluation metrics, attempt to compute SHAP values, and run the PSO optimizer if emissions surpass the threshold.
+脚本将训练模型、打印评估指标、尝试计算 SHAP 值，并在排放超过阈值时运行 PSO 优化器。
 
-## Project Structure
-- `data_preprocessing.py`: utilities for cleaning and scaling data.
-- `emission_predictor.py`: ensemble model wrapper.
-- `monitoring.py`: emission threshold monitoring and optimizer trigger.
-- `optimization.py`: basic Particle Swarm Optimization implementation.
-- `main.py`: end-to-end demonstration script.
-- `requirements.txt`: list of Python dependencies.
+## 项目结构
+- `data_preprocessing.py`：数据清洗和缩放工具。
+- `emission_predictor.py`：集成模型封装。
+- `monitoring.py`：排放阈值监控与优化触发。
+- `optimization.py`：简单的粒子群优化实现。
+- `main.py`：端到端演示脚本。
+- `requirements.txt`：Python 依赖列表。
 
-## License
-No license specified.
+## 许可证
+未指定许可证。
