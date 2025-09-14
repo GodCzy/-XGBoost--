@@ -8,8 +8,13 @@ from sklearn.model_selection import train_test_split
 
 from data_preprocessing import preprocess
 from emission_predictor import ModelManager
+from experiment_manager import ExperimentManager
 from monitoring import ProcessMonitor
-from optimization import pso
+from optimization import (
+    bayesian_optimization,
+    genetic_algorithm,
+    pso,
+)
 
 
 def generate_synthetic_data(n: int = 200):
@@ -78,6 +83,15 @@ def main():
 
     params, val = monitor.step(actual_emission=150.0, predicted_emission=60.0)
     print("Anomaly triggered optimization:", params, val)
+
+    manager = ExperimentManager()
+    bounds = [(300, 1000), (1, 10)]
+    manager.run("pso", pso, emission_objective, bounds, iterations=10)
+    manager.run(
+        "bayes", bayesian_optimization, emission_objective, bounds, iterations=10
+    )
+    manager.run("ga", genetic_algorithm, emission_objective, bounds, generations=10)
+    print("Experiment summary:\n", manager.compare())
 
 
 if __name__ == "__main__":
