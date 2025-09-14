@@ -37,13 +37,15 @@ class ProcessMonitor:
         self.residuals.append(residual)
         if len(self.residuals) < self.window:
             return False
-        recent = np.array(self.residuals[-self.window:])
+        recent = np.array(self.residuals[-self.window :])
         mean = recent.mean()
         std = recent.std() or 1.0
         return abs(residual - mean) > 3 * std
 
     def _update_threshold(self, value: float) -> None:
-        self.threshold = (1 - self.adapt_rate) * self.threshold + self.adapt_rate * value
+        self.threshold = (
+            1 - self.adapt_rate
+        ) * self.threshold + self.adapt_rate * value
 
     def adjust(self, current_emission: float):
         """Run optimizer if emission exceeds threshold."""
