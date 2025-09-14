@@ -25,6 +25,12 @@ python main.py
 ```
 脚本将训练模型、打印评估指标、尝试计算 SHAP 值，并在排放超过阈值时运行 PSO 优化器。
 
+## 测试
+运行测试以确保核心组件的稳定性：
+```bash
+pytest
+```
+
 ## 项目结构
 - `data_preprocessing.py`：数据加载、清洗、特征工程和质量报告工具。
 - `emission_predictor.py`：集成模型封装。
