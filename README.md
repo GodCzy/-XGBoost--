@@ -7,14 +7,15 @@
   工程以及数据质量报告。
 - **EmissionPredictor**：结合 RandomForest 与 XGBoost 并报告常见指标。
 - **过程监控**：当排放超过用户设定的阈值时触发优化。
-- **粒子群优化**：调节工艺参数。
+- **参数优化与实验管理**：提供粒子群、贝叶斯与遗传算法，并记录
+  实验结果及性能曲线。
 - **演示脚本**：生成合成数据并展示完整流程。
 
 ## 安装
 1. 确保已安装 Python 3.12+。
 2. 安装依赖：
    ```bash
-   pip install numpy pandas scikit-learn xgboost shap
+   pip install numpy pandas scikit-learn xgboost shap scipy matplotlib
    ```
    `shap` 库为可选项，未安装时将跳过基于 SHAP 的解释。
 
@@ -29,7 +30,8 @@ python main.py
 - `data_preprocessing.py`：数据加载、清洗、特征工程和质量报告工具。
 - `emission_predictor.py`：集成模型封装。
 - `monitoring.py`：排放阈值监控与优化触发。
-- `optimization.py`：简单的粒子群优化实现。
+- `optimization.py`：粒子群、贝叶斯及遗传算法实现。
+- `experiment_manager.py`：实验记录与可视化工具。
 - `main.py`：端到端演示脚本。
 - `requirements.txt`：Python 依赖列表。
 
