@@ -2,14 +2,21 @@
 
 from __future__ import annotations
 
+import logging
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+from config import Config
 from data_preprocessing import preprocess
 from emission_predictor import ModelManager
+from experiment_manager import ExperimentManager
 from monitoring import ProcessMonitor
-from optimization import pso
+from optimization import (
+    bayesian_optimization,
+    genetic_algorithm,
+    pso,
+)
 
 
 def generate_synthetic_data(n: int = 200):
@@ -37,9 +44,17 @@ def emission_objective(params):
 
 
 def main():
+    config = Config()
+    logging.basicConfig(
+        level=config.logging_level(),
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+    )
+    logger = logging.getLogger(__name__)
+
+    logger.info("Generating synthetic data")
     data = generate_synthetic_data()
     X, y, _, report = preprocess(data)
-    print("Data quality report:", report)
+    logger.info("Data quality report: %s", report)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
@@ -47,31 +62,56 @@ def main():
     predictor = ModelManager(seed=42)
     predictor.train(X_train, y_train)
     metrics = predictor.evaluate(X_test, y_test)
-    print("Evaluation metrics:", metrics)
+    logger.info("Evaluation metrics: %s", metrics)
 
     try:
         shap_vals = predictor.shap_values(X_train[:10], model_name="xgb")
-        print("Computed SHAP values with shape", shap_vals.shape)
-    except Exception as exc:  # pragma: no cover - shap optional
-        print("SHAP computation failed:", exc)
+        logger.info("Computed SHAP values with shape %s", shap_vals.shape)
+    except Exception:  # pragma: no cover - shap optional
+        logger.exception("SHAP computation failed")
 
     perm_imp = predictor.permutation_importance(
         X_test, y_test, model_name="rf", n_repeats=5
     )
-    print("Permutation importance:", perm_imp)
+    logger.info("Permutation importance: %s", perm_imp)
 
-    predictor.save(version="v1")
-    predictor.load(version="v1")
+    predictor.save(version="v1", path=config.models_dir)
+    predictor.load(version="v1", path=config.models_dir)
 
     monitor = ProcessMonitor(
-        threshold=50,
-        optimizer=pso,
-        objective=emission_objective,
-        bounds=[(300, 1000), (1, 10)],
-    )
-    params, val = monitor.adjust(current_emission=60)
-    print("Optimization result:", params, val)
+monitor = AnomalyMonitor(
+    threshold=config.threshold,
+    optimizer=pso,
+    objective=emission_objective,
+    bounds=[(300, 1000), (1, 10)],
+    window=5,
+)
+
+# 使用预测结果进行逐步监控
+preds = predictor.predict(X_test[:5])
+for actual, pred in zip(y_test[:5], preds):
+    params, val = monitor.step(actual_emission=actual, predicted_emission=pred)
+    print("Monitor step:", params, val)
+
+# 触发异常优化示例
+params, val = monitor.step(actual_emission=150.0, predicted_emission=60.0)
+print("Anomaly triggered optimization:", params, val)
+
+# 直接调用 adjust 进行额外调优并记录日志
+params, val = monitor.adjust(current_emission=config.threshold + 10)
+logger.info("Optimization result: %s %s", params, val)
+
+# 运行多种实验以比较不同优化策略
+manager = ExperimentManager()
+bounds = [(300, 1000), (1, 10)]
+manager.run("pso", pso, emission_objective, bounds, iterations=10)
+manager.run("bayes", bayesian_optimization, emission_objective, bounds, iterations=10)
+manager.run("ga", genetic_algorithm, emission_objective, bounds, generations=10)
+print("Experiment summary:\n", manager.compare())
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        logging.getLogger(__name__).exception("Application failed")

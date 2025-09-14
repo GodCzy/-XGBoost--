@@ -5,3 +5,7 @@ xgboost
 shap
 joblib
 pytest
+flask
+scipy
+matplotlib
+
