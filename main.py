@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from data_preprocessing import preprocess
-from emission_predictor import EmissionPredictor
+from emission_predictor import ModelManager
 from monitoring import ProcessMonitor
 from optimization import pso
 
@@ -44,16 +44,24 @@ def main():
         X, y, test_size=0.2, random_state=42
     )
 
-    predictor = EmissionPredictor()
+    predictor = ModelManager(seed=42)
     predictor.train(X_train, y_train)
     metrics = predictor.evaluate(X_test, y_test)
     print("Evaluation metrics:", metrics)
 
     try:
-        shap_vals = predictor.shap_values(X_train[:10])
+        shap_vals = predictor.shap_values(X_train[:10], model_name="xgb")
         print("Computed SHAP values with shape", shap_vals.shape)
     except Exception as exc:  # pragma: no cover - shap optional
         print("SHAP computation failed:", exc)
+
+    perm_imp = predictor.permutation_importance(
+        X_test, y_test, model_name="rf", n_repeats=5
+    )
+    print("Permutation importance:", perm_imp)
+
+    predictor.save(version="v1")
+    predictor.load(version="v1")
 
     monitor = ProcessMonitor(
         threshold=50,
