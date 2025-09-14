@@ -1,4 +1,5 @@
 """Demonstration of the minimal emission prediction and optimization framework."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -13,14 +14,19 @@ from optimization import pso
 
 def generate_synthetic_data(n: int = 200):
     rng = np.random.default_rng(42)
-    data = pd.DataFrame({
-        "electricity": rng.normal(100, 10, n),
-        "gdp": rng.normal(50, 5, n),
-        "coal": rng.normal(30, 3, n),
-    })
-    data["emission"] = (0.3 * data["electricity"] +
-                         0.5 * data["gdp"] +
-                         0.2 * data["coal"] + rng.normal(0, 2, n))
+    data = pd.DataFrame(
+        {
+            "electricity": rng.normal(100, 10, n),
+            "gdp": rng.normal(50, 5, n),
+            "coal": rng.normal(30, 3, n),
+        }
+    )
+    data["emission"] = (
+        0.3 * data["electricity"]
+        + 0.5 * data["gdp"]
+        + 0.2 * data["coal"]
+        + rng.normal(0, 2, n)
+    )
     return data
 
 
@@ -32,8 +38,11 @@ def emission_objective(params):
 
 def main():
     data = generate_synthetic_data()
-    X, y, _ = preprocess(data)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X, y, _, report = preprocess(data)
+    print("Data quality report:", report)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
     predictor = EmissionPredictor()
     predictor.train(X_train, y_train)
@@ -46,9 +55,12 @@ def main():
     except Exception as exc:  # pragma: no cover - shap optional
         print("SHAP computation failed:", exc)
 
-    monitor = ProcessMonitor(threshold=50, optimizer=pso,
-                             objective=emission_objective,
-                             bounds=[(300, 1000), (1, 10)])
+    monitor = ProcessMonitor(
+        threshold=50,
+        optimizer=pso,
+        objective=emission_objective,
+        bounds=[(300, 1000), (1, 10)],
+    )
     params, val = monitor.adjust(current_emission=60)
     print("Optimization result:", params, val)
 
