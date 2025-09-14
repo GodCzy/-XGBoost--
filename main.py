@@ -79,35 +79,36 @@ def main():
     predictor.load(version="v1", path=config.models_dir)
 
     monitor = ProcessMonitor(
-monitor = AnomalyMonitor(
-    threshold=config.threshold,
-    optimizer=pso,
-    objective=emission_objective,
-    bounds=[(300, 1000), (1, 10)],
-    window=5,
-)
+        threshold=config.threshold,
+        optimizer=pso,
+        objective=emission_objective,
+        bounds=[(300, 1000), (1, 10)],
+        window=5,
+    )
 
-# 使用预测结果进行逐步监控
-preds = predictor.predict(X_test[:5])
-for actual, pred in zip(y_test[:5], preds):
-    params, val = monitor.step(actual_emission=actual, predicted_emission=pred)
-    print("Monitor step:", params, val)
+    # 使用预测结果进行逐步监控
+    preds = predictor.predict(X_test[:5])
+    for actual, pred in zip(y_test[:5], preds):
+        params, val = monitor.step(actual_emission=actual, predicted_emission=pred)
+        print("Monitor step:", params, val)
 
-# 触发异常优化示例
-params, val = monitor.step(actual_emission=150.0, predicted_emission=60.0)
-print("Anomaly triggered optimization:", params, val)
+    # 触发异常优化示例
+    params, val = monitor.step(actual_emission=150.0, predicted_emission=60.0)
+    print("Anomaly triggered optimization:", params, val)
 
-# 直接调用 adjust 进行额外调优并记录日志
-params, val = monitor.adjust(current_emission=config.threshold + 10)
-logger.info("Optimization result: %s %s", params, val)
+    # 直接调用 adjust 进行额外调优并记录日志
+    params, val = monitor.adjust(current_emission=config.threshold + 10)
+    logger.info("Optimization result: %s %s", params, val)
 
-# 运行多种实验以比较不同优化策略
-manager = ExperimentManager()
-bounds = [(300, 1000), (1, 10)]
-manager.run("pso", pso, emission_objective, bounds, iterations=10)
-manager.run("bayes", bayesian_optimization, emission_objective, bounds, iterations=10)
-manager.run("ga", genetic_algorithm, emission_objective, bounds, generations=10)
-print("Experiment summary:\n", manager.compare())
+    # 运行多种实验以比较不同优化策略
+    manager = ExperimentManager()
+    bounds = [(300, 1000), (1, 10)]
+    manager.run("pso", pso, emission_objective, bounds, iterations=10)
+    manager.run(
+        "bayes", bayesian_optimization, emission_objective, bounds, iterations=10
+    )
+    manager.run("ga", genetic_algorithm, emission_objective, bounds, generations=10)
+    print("Experiment summary:\n", manager.compare())
 
 
 if __name__ == "__main__":
