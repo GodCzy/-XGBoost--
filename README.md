@@ -38,6 +38,11 @@ python main.py
 ```
 脚本将训练模型、打印评估指标、尝试计算 SHAP 值，并在排放超过阈值时运行 PSO 优化器。
 
+## 测试
+运行测试以确保核心组件的稳定性：
+```bash
+pytest
+=======
 启动 API 服务：
 ```bash
 python service.py

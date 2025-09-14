@@ -4,6 +4,8 @@ scikit-learn
 xgboost
 shap
 joblib
+pytest
 flask
 scipy
 matplotlib
+
