@@ -69,13 +69,20 @@ def main():
     predictor.load(version="v1")
 
     monitor = ProcessMonitor(
-        threshold=50,
+        threshold=70,
         optimizer=pso,
         objective=emission_objective,
         bounds=[(300, 1000), (1, 10)],
+        window=5,
     )
-    params, val = monitor.adjust(current_emission=60)
-    print("Optimization result:", params, val)
+
+    preds = predictor.predict(X_test[:5])
+    for actual, pred in zip(y_test[:5], preds):
+        params, val = monitor.step(actual_emission=actual, predicted_emission=pred)
+        print("Monitor step:", params, val)
+
+    params, val = monitor.step(actual_emission=150.0, predicted_emission=60.0)
+    print("Anomaly triggered optimization:", params, val)
 
     manager = ExperimentManager()
     bounds = [(300, 1000), (1, 10)]
