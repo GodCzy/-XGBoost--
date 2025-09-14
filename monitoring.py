@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from typing import Callable, List, Optional, Tuple
-
+import logging
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 class ProcessMonitor:
@@ -35,15 +37,35 @@ class ProcessMonitor:
         self.residuals.append(residual)
         if len(self.residuals) < self.window:
             return False
-        recent = np.array(self.residuals[-self.window :])
+        recent = np.array(self.residuals[-self.window:])
         mean = recent.mean()
         std = recent.std() or 1.0
         return abs(residual - mean) > 3 * std
 
     def _update_threshold(self, value: float) -> None:
-        self.threshold = (
-            1 - self.adapt_rate
-        ) * self.threshold + self.adapt_rate * value
+        self.threshold = (1 - self.adapt_rate) * self.threshold + self.adapt_rate * value
+
+    def adjust(self, current_emission: float):
+        """Run optimizer if emission exceeds threshold."""
+        if current_emission > self.threshold:
+            logger.info(
+                "Emission %.2f exceeds threshold %.2f",
+                current_emission,
+                self.threshold,
+            )
+            try:
+                params, val = self.optimizer(self.objective, self.bounds)
+                logger.info("Optimization finished with value %.3f", val)
+                return params, val
+            except Exception:  # pragma: no cover - optimizer errors
+                logger.exception("Optimization failed")
+                raise
+        logger.debug(
+            "Emission %.2f within threshold %.2f",
+            current_emission,
+            self.threshold,
+        )
+        return None, current_emission
 
     # ------------------------------------------------------------------
     def step(self, actual_emission: float, predicted_emission: float):

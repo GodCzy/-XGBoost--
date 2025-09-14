@@ -16,12 +16,18 @@
   实验结果及性能曲线。
 
 - **演示脚本**：生成合成数据并展示完整流程。
+- **Flask API 服务**：对外提供排放预测接口，可用于部署或集成。
+- **Dockerfile 与 CI**：通过 GitHub Actions 自动化格式检查、冒烟测试和镜像构建。
 
 ## 安装
 1. 确保已安装 Python 3.12+。
 2. 安装依赖：
    ```bash
+
+   pip install -r requirements.txt
+=======
    pip install numpy pandas scikit-learn xgboost shap scipy matplotlib
+
    ```
    `shap` 库为可选项，未安装时将跳过基于 SHAP 的解释。
 
@@ -31,6 +37,23 @@
 python main.py
 ```
 脚本将训练模型、打印评估指标、尝试计算 SHAP 值，并在排放超过阈值时运行 PSO 优化器。
+
+启动 API 服务：
+```bash
+python service.py
+```
+发送预测请求示例：
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '[{"electricity":100,"gdp":50,"coal":30}]'
+```
+
+使用 Docker 运行服务：
+```bash
+docker build -t emission-service .
+docker run -p 8000:8000 emission-service
+```
 
 ## 项目结构
 - `data_preprocessing.py`：数据加载、清洗、特征工程和质量报告工具。
