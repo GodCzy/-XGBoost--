@@ -1,5 +1,5 @@
 import pandas as pd
-from data_preprocessing import preprocess
+from data_preprocessing import clean_data, preprocess
 
 
 def test_preprocess_returns_expected_shapes():
@@ -9,3 +9,9 @@ def test_preprocess_returns_expected_shapes():
     assert list(y) == [7, 8, 9]
     assert "missing_rate" in report
     assert scaler is not None
+
+
+def test_clean_data_handles_single_row():
+    df = pd.DataFrame({"a": [1.0], "b": [2.0]})
+    cleaned = clean_data(df)
+    assert not cleaned.empty
