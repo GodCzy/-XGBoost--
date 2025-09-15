@@ -3,18 +3,10 @@
 本项目展示了一个最小化的工作流程，使用机器学习预测排放，并在排放超出阈值时进行优化。
 
 ## 功能
-- **数据预处理**：支持 CSV/SQLite 数据加载，缺失值填补、异常值剔除、特征
-  工程以及数据质量报告。
-- **EmissionPredictor**：结合 RandomForest 与 XGBoost 并报告常见指标。
-- **过程监控**：当排放超过用户设定的阈值时触发优化。
-
-- **自适应监控**：实时监测排放，支持异常检测、自适应阈值与告警，
-  并可与优化器闭环联动。
-- **粒子群优化**：调节工艺参数。
-=======
-- **参数优化与实验管理**：提供粒子群、贝叶斯与遗传算法，并记录
-  实验结果及性能曲线。
-
+- **数据预处理**：支持 CSV/SQLite 数据加载，缺失值填补、异常值剔除、特征工程以及数据质量报告。
+- **EmissionPredictor**：结合 RandomForest、XGBoost 与 MLP，提供多模型评估指标。
+- **自适应监控**：实时监测排放，支持异常检测、自适应阈值与告警，可与优化器闭环联动。
+- **参数优化与实验管理**：提供粒子群、贝叶斯与遗传算法，并记录实验结果及性能曲线。
 - **演示脚本**：生成合成数据并展示完整流程。
 - **Flask API 服务**：对外提供排放预测接口，可用于部署或集成。
 - **Dockerfile 与 CI**：通过 GitHub Actions 自动化格式检查、冒烟测试和镜像构建。
@@ -23,11 +15,7 @@
 1. 确保已安装 Python 3.12+。
 2. 安装依赖：
    ```bash
-
    pip install -r requirements.txt
-=======
-   pip install numpy pandas scikit-learn xgboost shap scipy matplotlib
-
    ```
    `shap` 库为可选项，未安装时将跳过基于 SHAP 的解释。
 
@@ -42,7 +30,9 @@ python main.py
 运行测试以确保核心组件的稳定性：
 ```bash
 pytest
-=======
+```
+
+## API 服务
 启动 API 服务：
 ```bash
 python service.py
@@ -53,7 +43,6 @@ curl -X POST http://localhost:8000/predict \
   -H "Content-Type: application/json" \
   -d '[{"electricity":100,"gdp":50,"coal":30}]'
 ```
-
 使用 Docker 运行服务：
 ```bash
 docker build -t emission-service .
@@ -67,7 +56,10 @@ docker run -p 8000:8000 emission-service
 - `optimization.py`：粒子群、贝叶斯及遗传算法实现。
 - `experiment_manager.py`：实验记录与可视化工具。
 - `main.py`：端到端演示脚本。
+- `service.py`：Flask API 服务。
+- `tests/`：单元测试用例。
 - `requirements.txt`：Python 依赖列表。
 
 ## 许可证
 未指定许可证。
+
