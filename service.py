@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 import pandas as pd
 
 from config import Config
@@ -19,6 +19,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+
+@app.route("/")
+def index() -> str:
+    """Serve the interactive dashboard."""
+    return render_template("index.html")
+
 
 logger.info("Training model for API service")
 train_data = generate_synthetic_data()
