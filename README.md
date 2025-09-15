@@ -37,6 +37,8 @@ pytest
 ```bash
 python service.py
 ```
+浏览器访问 `http://localhost:8000` 可打开交互式前端页面，手动输入特征并获得预测结果。
+
 发送预测请求示例：
 ```bash
 curl -X POST http://localhost:8000/predict \

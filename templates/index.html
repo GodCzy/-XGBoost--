@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<title>排放预测与优化 Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-css-reset@1.4.0/dist/reset.min.css" />
+<style>
+  body { font-family: Arial, sans-serif; margin: 40px; background: #f5f7fa; color: #333; }
+  .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+  h1 { text-align: center; margin-bottom: 20px; }
+  form { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  input { flex: 1 1 30%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+  button { padding: 10px 20px; border: none; background: #4caf50; color: #fff; border-radius: 4px; cursor: pointer; }
+  button:hover { background: #45a049; }
+  #result { font-size: 1.2em; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>排放预测面板</h1>
+  <form id="predict-form">
+    <input type="number" id="electricity" placeholder="Electricity" required />
+    <input type="number" id="gdp" placeholder="GDP" required />
+    <input type="number" id="coal" placeholder="Coal" required />
+    <button type="submit">预测</button>
+  </form>
+  <div id="result"></div>
+</div>
+<script>
+  document.getElementById('predict-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = [{
+      electricity: Number(document.getElementById('electricity').value),
+      gdp: Number(document.getElementById('gdp').value),
+      coal: Number(document.getElementById('coal').value),
+    }];
+    const res = await fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    document.getElementById('result').textContent = data.prediction
+      ? `预测排放: ${data.prediction[0].toFixed(2)}`
+      : `错误: ${data.error}`;
+  });
+</script>
+</body>
+</html>
