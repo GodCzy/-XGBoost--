@@ -39,9 +39,16 @@ def predict():
     """Return emission predictions for provided features."""
     try:
         payload = request.get_json(force=True)
-        df = pd.DataFrame(payload)
+        df = (
+            pd.DataFrame([payload])
+            if isinstance(payload, dict)
+            else pd.DataFrame(payload)
+        )
         df = clean_data(df)
+        if df.empty:
+            raise ValueError("No valid input data")
         df = engineer_features(df)
+        df = df[scaler.feature_names_in_]
         X_in = scaler.transform(df)
         preds = model.predict(X_in)
         return jsonify({"prediction": preds.tolist()})
