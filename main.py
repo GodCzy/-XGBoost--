@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -43,6 +45,20 @@ def emission_objective(params):
     return 0.5 * temp + 0.3 * pressure
 
 
+def load_training_frame(config: Config) -> pd.DataFrame:
+    """Return dataframe for training based on configuration."""
+
+    if config.dataset_path:
+        dataset_path = Path(config.dataset_path)
+        if dataset_path.exists():
+            return pd.read_csv(dataset_path)
+        logging.getLogger(__name__).warning(
+            "Dataset path %s not found. Falling back to synthetic data.",
+            dataset_path,
+        )
+    return generate_synthetic_data()
+
+
 def main():
     config = Config()
     logging.basicConfig(
@@ -51,8 +67,7 @@ def main():
     )
     logger = logging.getLogger(__name__)
 
-    logger.info("Generating synthetic data")
-    data = generate_synthetic_data()
+    data = load_training_frame(config)
     X, y, _, report = preprocess(data)
     logger.info("Data quality report: %s", report)
     X_train, X_test, y_train, y_test = train_test_split(
@@ -63,10 +78,11 @@ def main():
     predictor.train(X_train, y_train)
     metrics = predictor.evaluate(X_test, y_test)
     logger.info("Evaluation metrics: %s", metrics)
+    logger.info("Ensemble weights: %s", predictor.ensemble_weights())
 
     try:
-        shap_vals = predictor.shap_values(X_train[:10], model_name="xgb")
-        logger.info("Computed SHAP values with shape %s", shap_vals.shape)
+        shap_vals = predictor.shap_values(X_train[:10], strategy="self_adaption")
+        logger.info("Computed ensemble SHAP values with shape %s", shap_vals.shape)
     except Exception:  # pragma: no cover - shap optional
         logger.exception("SHAP computation failed")
 
@@ -87,7 +103,7 @@ def main():
     )
 
     # 使用预测结果进行逐步监控
-    preds = predictor.predict(X_test[:5])
+    preds = predictor.predict(X_test[:5], strategy="self_adaption")
     for actual, pred in zip(y_test[:5], preds):
         params, val = monitor.step(actual_emission=actual, predicted_emission=pred)
         print("Monitor step:", params, val)

@@ -5,7 +5,7 @@ def test_index_route():
     client = app.test_client()
     response = client.get("/")
     assert response.status_code == 200
-    assert "排放预测面板" in response.get_data(as_text=True)
+    assert "排放预测与优化总览" in response.get_data(as_text=True)
 
 
 def test_predict_route_returns_value():
@@ -13,4 +13,29 @@ def test_predict_route_returns_value():
     payload = {"electricity": 100, "gdp": 50, "coal": 30}
     response = client.post("/predict", json=payload)
     assert response.status_code == 200
-    assert "prediction" in response.get_json()
+    assert "prediction" in response.get_json() or "predictions" in response.get_json()
+
+
+def test_metadata_and_metrics_routes():
+    client = app.test_client()
+    metadata = client.get("/metadata").get_json()
+    assert metadata["features"]
+    assert metadata["strategies"]
+    assert "ensemble_weights" in metadata
+
+    metrics = client.get("/metrics").get_json()
+    assert "base_models" in metrics and "ensembles" in metrics
+
+
+def test_feature_insights_and_monitor_routes():
+    client = app.test_client()
+    insights = client.get("/feature-insights").get_json()
+    assert "permutation_importance" in insights
+    monitor = client.get("/monitor-sample").get_json()
+    assert "log" in monitor and isinstance(monitor["log"], list)
+
+
+def test_optimization_route():
+    client = app.test_client()
+    optimization = client.get("/optimization").get_json()
+    assert "experiments" in optimization
