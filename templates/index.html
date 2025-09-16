@@ -1,6 +1,500 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
+
+  <meta charset="UTF-8" />
+  <title>排放预测与优化总览</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/modern-css-reset@1.4.0/dist/reset.min.css"
+  />
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f7fa;
+      color: #1f2933;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 16px 40px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+      font-size: 1.4rem;
+    }
+
+    p.lead {
+      text-align: center;
+      margin-bottom: 32px;
+      color: #52606d;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    form {
+      display: grid;
+      gap: 16px;
+    }
+
+    .feature-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .feature-grid label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+      color: #334155;
+    }
+
+    .feature-grid input {
+      margin-top: 6px;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    select,
+    button {
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid #94a3b8;
+      font-size: 1rem;
+    }
+
+    button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .result {
+      margin-top: 12px;
+      font-size: 1rem;
+      color: #0f172a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th,
+    td {
+      border: 1px solid #e2e8f0;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f5f9;
+      font-weight: 600;
+    }
+
+    caption {
+      text-align: left;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .grid-two {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .muted {
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .error {
+      color: #dc2626;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>排放预测与优化总览</h1>
+    <p class="lead">
+      探索数据质量、模型指标、特征影响以及优化算法结果。
+    </p>
+
+    <section class="panel" id="prediction-panel">
+      <h2>在线预测</h2>
+      <form id="predict-form">
+        <div class="feature-grid" id="feature-inputs"></div>
+        <div class="control-row">
+          <label>
+            组合策略
+            <select id="strategy-select"></select>
+          </label>
+          <button type="submit">生成预测</button>
+        </div>
+      </form>
+      <div class="result" id="prediction-result"></div>
+      <div class="result" id="prediction-table"></div>
+    </section>
+
+    <section class="panel" id="dataset-panel">
+      <h2>数据概览</h2>
+      <div id="dataset-report"></div>
+      <div id="ensemble-weights"></div>
+    </section>
+
+    <section class="panel" id="metrics-panel">
+      <h2>模型评估指标</h2>
+      <div id="metrics-table"></div>
+    </section>
+
+    <section class="panel" id="insights-panel">
+      <h2>特征影响分析</h2>
+      <div class="grid-two">
+        <div id="permutation-importance"></div>
+        <div id="shap-importance"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="optimization-panel">
+      <h2>优化算法表现</h2>
+      <div id="optimization-results"></div>
+    </section>
+
+    <section class="panel" id="monitor-panel">
+      <h2>过程监控示例</h2>
+      <div id="monitor-log"></div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      features: [],
+      strategies: [],
+    };
+
+    function sanitizeId(name) {
+      return name.replace(/[^a-zA-Z0-9_-]/g, '-');
+    }
+
+    function createTable(headers, rows) {
+      if (!rows.length) {
+        return '<p class="muted">暂无数据</p>';
+      }
+      const thead =
+        `<thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead>`;
+      const tbody =
+        `<tbody>${rows
+          .map((row) =>
+            `<tr>${row.map((cell) => `<td>${cell}</td>`).join('')}</tr>`,
+          )
+          .join('')}</tbody>`;
+      return `<table>${thead}${tbody}</table>`;
+    }
+
+    async function fetchJSON(url) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`请求失败: ${response.status}`);
+      }
+      return response.json();
+    }
+
+    function renderFeatureInputs(features, strategies) {
+      const container = document.getElementById('feature-inputs');
+      container.innerHTML = '';
+      features.forEach((feature) => {
+        const id = `feature-${sanitizeId(feature)}`;
+        const wrapper = document.createElement('label');
+        wrapper.textContent = feature;
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.step = 'any';
+        input.id = id;
+        input.required = true;
+        input.dataset.feature = feature;
+        wrapper.appendChild(input);
+        container.appendChild(wrapper);
+      });
+      const select = document.getElementById('strategy-select');
+      select.innerHTML = '';
+      strategies.forEach((strategy) => {
+        const option = document.createElement('option');
+        option.value = strategy;
+        option.textContent = strategy;
+        select.appendChild(option);
+      });
+    }
+
+    function renderReport(report, weights) {
+      if (!report) {
+        return;
+      }
+      const reportDiv = document.getElementById('dataset-report');
+      const rows = Object.entries(report.missing_rate || {}).map(
+        ([feature, value]) => [feature, `${(value * 100).toFixed(2)}%`],
+      );
+      rows.unshift(['记录数', report.n_rows ?? 0]);
+      reportDiv.innerHTML = `<caption>数据质量</caption>${createTable(
+        ['指标', '数值'],
+        rows,
+      )}
+    <p class="muted">缺失率基于预处理前的原始数据。</p>`;
+      const weightDiv = document.getElementById('ensemble-weights');
+      const weightRows = Object.entries(weights || {}).map(([name, pair]) => [
+        name,
+        `${(pair.xgb * 100).toFixed(1)}%`,
+        `${(pair.rf * 100).toFixed(1)}%`,
+      ]);
+      weightDiv.innerHTML =
+        `<caption>组合权重（XGBoost / 随机森林）</caption>${createTable(
+          ['策略', 'XGB 权重', 'RF 权重'],
+          weightRows,
+        )}`;
+    }
+
+    function renderMetrics(metrics) {
+      const container = document.getElementById('metrics-table');
+      if (!metrics) {
+        container.innerHTML = '<p class="muted">暂无指标信息。</p>';
+        return;
+      }
+      const rows = [];
+      Object.entries(metrics.base_models || {}).forEach(([name, values]) => {
+        rows.push([
+          `基础-${name}`,
+          values.r2.toFixed(3),
+          `${(values.mape * 100).toFixed(2)}%`,
+          values.mae.toFixed(3),
+          values.rmse.toFixed(3),
+        ]);
+      });
+      Object.entries(metrics.ensembles || {}).forEach(([name, values]) => {
+        rows.push([
+          `组合-${name}`,
+          values.r2.toFixed(3),
+          `${(values.mape * 100).toFixed(2)}%`,
+          values.mae.toFixed(3),
+          values.rmse.toFixed(3),
+        ]);
+      });
+      container.innerHTML = createTable(
+        ['模型', 'R²', 'MAPE', 'MAE', 'RMSE'],
+        rows,
+      );
+    }
+
+    function renderPermutation(data) {
+      const container = document.getElementById('permutation-importance');
+      if (!data || !data.length) {
+        container.innerHTML = '<p class="muted">暂未生成置换重要性。</p>';
+        return;
+      }
+      const rows = data.map((item) => [
+        item.feature,
+        item.importance.toFixed(4),
+      ]);
+      container.innerHTML =
+        `<caption>置换重要性（随机森林）</caption>${createTable(
+          ['特征', '重要性'],
+          rows,
+        )}`;
+    }
+
+    function renderShap(shap) {
+      const container = document.getElementById('shap-importance');
+      if (!shap) {
+        container.innerHTML = '<p class="muted">SHAP 分析不可用。</p>';
+        return;
+      }
+      const sections = Object.entries(shap)
+        .map(([name, values]) => {
+          const rows = values.map((item) => [
+            item.feature,
+            item.importance.toFixed(4),
+          ]);
+          const panelStyle = 'box-shadow:none;padding:0;margin:0 0 16px 0;';
+          return [
+            `<div class="panel" style="${panelStyle}">`,
+            `<caption>${name.toUpperCase()} 平均 |SHAP|</caption>${createTable(
+              ['特征', '影响力'],
+              rows,
+            )}`,
+            '</div>',
+          ].join('');
+        })
+        .join('');
+      container.innerHTML = sections;
+    }
+
+    function renderOptimization(data) {
+      const container = document.getElementById('optimization-results');
+      if (!data) {
+        container.innerHTML = '<p class="muted">暂无优化结果。</p>';
+        return;
+      }
+      const { experiments = [], summary = [] } = data;
+      const experimentRows = experiments.map((item) => [
+        item.algorithm,
+        `[${(item.best_params || [])
+          .map((value) => value.toFixed(2))
+          .join(', ')}]`,
+        item.best_val.toFixed(3),
+      ]);
+      const summaryRows = summary.map((item) => [
+        item.algorithm,
+        item.best_params,
+        item.best_val,
+        item.iterations,
+      ]);
+      container.innerHTML =
+        `<caption>最新实验最佳结果</caption>${createTable(
+          ['算法', '最佳参数', '目标值'],
+          experimentRows,
+        )}
+    <caption>实验日志概览</caption>${createTable(
+      ['算法', '最佳参数', '目标值', '迭代数'],
+      summaryRows,
+    )}`;
+    }
+
+    function renderMonitor(log) {
+      const container = document.getElementById('monitor-log');
+      if (!log || !log.log) {
+        container.innerHTML = '<p class="muted">暂无监控记录。</p>';
+        return;
+      }
+      const rows = log.log.map((item) => [
+        item.step,
+        item.actual !== null ? item.actual.toFixed(2) : '-',
+        item.predicted !== null ? item.predicted.toFixed(2) : '-',
+        item.action
+          ? `[${item.action.map((value) => value.toFixed(2)).join(', ')}]`
+          : '无',
+        item.value.toFixed(2),
+        item.forced ? '强制调整' : '',
+      ]);
+      container.innerHTML =
+        `<p class="muted">当前阈值：${log.threshold.toFixed(2)}</p>${createTable(
+          ['步骤', '实际值', '预测值', '优化动作', '输出', '说明'],
+          rows,
+        )}`;
+    }
+
+    async function initDashboard() {
+      try {
+        const metadata = await fetchJSON('/metadata');
+        state.features = metadata.features || [];
+        state.strategies = metadata.strategies || [];
+        renderFeatureInputs(state.features, state.strategies);
+        renderReport(metadata.report, metadata.ensemble_weights);
+        const metrics = await fetchJSON('/metrics');
+        renderMetrics(metrics);
+        const insights = await fetchJSON('/feature-insights');
+        renderPermutation(insights.permutation_importance);
+        renderShap(insights.shap_summary);
+        const optimization = await fetchJSON('/optimization');
+        renderOptimization(optimization);
+        const monitor = await fetchJSON('/monitor-sample');
+        renderMonitor(monitor);
+      } catch (error) {
+        document.getElementById('prediction-result').innerHTML =
+          `<p class="error">初始化失败：${error.message}</p>`;
+      }
+    }
+
+    async function handlePredict(event) {
+      event.preventDefault();
+      const inputs = Array.from(
+        document.querySelectorAll('#feature-inputs input'),
+      );
+      const payload = {};
+      for (const input of inputs) {
+        const value = input.value;
+        if (value === '') {
+          input.focus();
+          return;
+        }
+        payload[input.dataset.feature] = Number(value);
+      }
+      const strategy = document.getElementById('strategy-select').value;
+      try {
+        const response = await fetch(
+          `/predict?strategy=${encodeURIComponent(strategy)}&all_strategies=true`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          },
+        );
+        const data = await response.json();
+        if (response.ok && data.predictions) {
+          document.getElementById('prediction-result').textContent =
+            '预测已生成，详见下表。';
+          const rows = Object.entries(data.predictions).map(
+            ([name, values]) => [
+              name,
+              values.map((value) => Number(value).toFixed(2)).join(', '),
+            ],
+          );
+          document.getElementById('prediction-table').innerHTML = createTable(
+            ['策略', '预测值'],
+            rows,
+          );
+        } else if (response.ok && data.prediction) {
+          document.getElementById('prediction-result').textContent =
+            `预测结果 (${data.strategy}): ${data.prediction
+              .map((value) => Number(value).toFixed(2))
+              .join(', ')}`;
+          document.getElementById('prediction-table').innerHTML = '';
+        } else {
+          throw new Error(data.error || '未知错误');
+        }
+      } catch (error) {
+        document.getElementById('prediction-result').innerHTML =
+          `<p class="error">预测失败：${error.message}</p>`;
+        document.getElementById('prediction-table').innerHTML = '';
+      }
+    }
+
+    document
+      .getElementById('predict-form')
+      .addEventListener('submit', handlePredict);
+    document.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+=======
 <meta charset="UTF-8" />
 <title>排放预测与优化总览</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-css-reset@1.4.0/dist/reset.min.css" />
@@ -292,5 +786,6 @@ async function handlePredict(event) {
 document.getElementById('predict-form').addEventListener('submit', handlePredict);
 document.addEventListener('DOMContentLoaded', initDashboard);
 </script>
+
 </body>
 </html>
