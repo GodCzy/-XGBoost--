@@ -68,8 +68,9 @@ def clean_data(df: pd.DataFrame, z_thresh: float = 3.0) -> pd.DataFrame:
     df = df.copy()
     df = df.fillna(df.median(numeric_only=True))
     numeric = df.select_dtypes("number")
-    if len(df) > 1:
+    if len(df) > 1 and not numeric.empty:
         z = ((numeric - numeric.mean()) / numeric.std(ddof=0)).abs()
+        z = z.replace([np.inf, -np.inf], np.nan).fillna(0.0)
         df = df[(z <= z_thresh).all(axis=1)]
     return df
 

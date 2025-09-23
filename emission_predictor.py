@@ -124,9 +124,13 @@ class ModelManager:
         results["ensembles"]["mean"] = self._metric_summary(
             y, self.predict(X, strategy="mean")
         )
-        for strategy in ("equal", "residual", "self_adaption", "stacking"):
+        for strategy in ("equal", "residual", "self_adaption"):
             results["ensembles"][strategy] = self._metric_summary(
                 y, self.predict(X, strategy=strategy)
+            )
+        if self.meta_model is not None:
+            results["ensembles"]["stacking"] = self._metric_summary(
+                y, self.predict(X, strategy="stacking")
             )
         return results
 
@@ -174,14 +178,16 @@ class ModelManager:
 
     # ------------------------------------------------------------------
     def available_strategies(self) -> list[str]:
-        return [
+        strategies = [
             "mean",
             "equal",
             "residual",
             "self_adaption",
-            "stacking",
             *self.models.keys(),
         ]
+        if self.meta_model is not None:
+            strategies.insert(4, "stacking")
+        return strategies
 
     def ensemble_weights(self) -> Dict[str, Dict[str, float]]:
         weights = {}
