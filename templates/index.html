@@ -7,91 +7,192 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/modern-css-reset@1.4.0/dist/reset.min.css"
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      :root {
+        --bg-start: #f5f7ff;
+        --bg-end: #f0f9ff;
+        --text-strong: #0f172a;
+        --text-muted: #64748b;
+        --primary: #2563eb;
+        --accent: #7c3aed;
+        --card-bg: rgba(255, 255, 255, 0.92);
+        --border: rgba(148, 163, 184, 0.25);
+        --radius-lg: 22px;
+        --radius-md: 16px;
+        --shadow-soft: 0 32px 60px rgba(15, 23, 42, 0.12);
+        --shadow-light: 0 18px 38px rgba(37, 99, 235, 0.18);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
-        color: #0f172a;
+        font-family: "Manrope", "Segoe UI", Arial, sans-serif;
+        color: var(--text-strong);
+        line-height: 1.65;
+        min-height: 100vh;
+        position: relative;
+        background: var(--bg-end);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        background:
+          radial-gradient(circle at 12% 18%, rgba(124, 58, 237, 0.16), transparent 55%),
+          radial-gradient(circle at 82% 12%, rgba(37, 99, 235, 0.15), transparent 60%),
+          linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background:
+          radial-gradient(circle at 50% 92%, rgba(15, 23, 42, 0.08), transparent 60%);
+        opacity: 0.9;
       }
 
       .container {
         max-width: 1180px;
-        margin: 36px auto 48px;
-        padding: 0 18px 48px;
+        margin: 48px auto 72px;
+        padding: 0 28px 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
       }
 
       header {
         text-align: center;
-        margin-bottom: 32px;
+        display: grid;
+        gap: 18px;
+        margin-bottom: 10px;
       }
 
       header h1 {
-        font-size: 2.2rem;
+        font-size: clamp(2.2rem, 2.4vw, 2.9rem);
         font-weight: 700;
-        margin-bottom: 10px;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
       }
 
       header p {
-        font-size: 1.1rem;
-        color: #475569;
-        line-height: 1.6;
+        font-size: 1.05rem;
+        color: var(--text-muted);
+        max-width: 820px;
+        justify-self: center;
+      }
+
+      .section-lead {
+        color: var(--text-muted);
+        margin-bottom: 18px;
+        font-size: 0.98rem;
       }
 
       .panel {
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-        padding: 26px;
-        margin-bottom: 26px;
-        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-soft);
+        padding: 32px;
+        backdrop-filter: blur(18px);
+        position: relative;
+        overflow: hidden;
       }
 
-      h2 {
-        font-size: 1.4rem;
+      .panel::before {
+        content: "";
+        position: absolute;
+        top: -60px;
+        right: -80px;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(
+          circle,
+          rgba(37, 99, 235, 0.16) 0%,
+          rgba(124, 58, 237, 0.05) 55%,
+          transparent 80%
+        );
+        transform: rotate(12deg);
+      }
+
+      .panel > *:first-child {
+        position: relative;
+        z-index: 1;
+      }
+
+      .panel h2 {
+        font-size: 1.45rem;
         margin-bottom: 14px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
-      h2 span {
-        font-size: 0.9rem;
-        color: #64748b;
-        font-weight: 500;
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(37, 99, 235, 0.12);
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.82rem;
+        color: var(--primary);
+        text-transform: none;
       }
 
       form {
         display: grid;
-        gap: 18px;
+        gap: 20px;
       }
 
       .feature-grid {
         display: grid;
-        gap: 12px;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       }
 
       .feature-grid label {
         display: flex;
         flex-direction: column;
         gap: 6px;
-        font-size: 0.9rem;
-        color: #334155;
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        background: rgba(248, 250, 252, 0.6);
       }
 
       .feature-grid input {
-        padding: 10px;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
+        padding: 10px 12px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 10px;
         font-size: 1rem;
-        transition: border 0.2s ease;
+        transition: border 0.2s ease, box-shadow 0.2s ease;
+        color: var(--text-strong);
+        background: #fff;
       }
 
       .feature-grid input:focus {
         outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
       }
 
       .control-row {
@@ -103,28 +204,31 @@
 
       select,
       button {
-        padding: 10px 16px;
-        border-radius: 8px;
-        border: 1px solid #94a3b8;
+        padding: 12px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
         font-size: 1rem;
+        background: #fff;
+        color: var(--text-strong);
       }
 
       button {
-        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        background: linear-gradient(135deg, var(--primary), var(--accent));
         color: #fff;
         border: none;
         cursor: pointer;
         font-weight: 600;
+        box-shadow: var(--shadow-light);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
 
       button:hover {
         transform: translateY(-1px);
-        box-shadow: 0 12px 20px rgba(37, 99, 235, 0.25);
+        box-shadow: 0 22px 32px rgba(37, 99, 235, 0.22);
       }
 
       code {
-        font-family: 'Fira Code', 'Consolas', monospace;
+        font-family: "Fira Code", "Consolas", monospace;
         background: rgba(15, 23, 42, 0.06);
         padding: 2px 6px;
         border-radius: 6px;
@@ -132,11 +236,11 @@
       }
 
       .toggle {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
-        font-size: 0.95rem;
-        color: #475569;
+        font-size: 0.92rem;
+        color: var(--text-muted);
       }
 
       .toggle input {
@@ -146,44 +250,18 @@
 
       .result {
         margin-top: 12px;
-        font-size: 1rem;
-        color: #0f172a;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 12px;
-      }
-
-      th,
-      td {
-        border: 1px solid #e2e8f0;
-        padding: 8px 10px;
-        text-align: left;
-        font-size: 0.95rem;
-      }
-
-      th {
-        background: #f8fafc;
-        font-weight: 600;
-      }
-
-      caption {
-        text-align: left;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #334155;
+        font-size: 0.98rem;
+        color: var(--text-strong);
       }
 
       .grid-two {
         display: grid;
-        gap: 18px;
+        gap: 20px;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       }
 
       .muted {
-        color: #64748b;
+        color: var(--text-muted);
         font-size: 0.9rem;
       }
 
@@ -192,74 +270,56 @@
         margin-top: 10px;
       }
 
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        background: rgba(37, 99, 235, 0.08);
-        border-radius: 999px;
-        padding: 4px 10px;
-        font-size: 0.85rem;
-        color: #1d4ed8;
-      }
-
-      .highlight-card {
-        padding: 16px;
-        border-radius: 12px;
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        background: rgba(248, 250, 252, 0.8);
-      }
-
       .capability-grid,
       .strategy-grid,
       .model-grid {
         display: grid;
-        gap: 18px;
+        gap: 20px;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       }
 
       .capability-card,
       .strategy-card,
       .model-card {
-        padding: 18px;
-        border-radius: 12px;
+        padding: 22px;
+        border-radius: var(--radius-md);
         border: 1px solid rgba(148, 163, 184, 0.25);
-        background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), #ffffff 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
       }
 
       .capability-card h3,
       .strategy-card h3,
       .model-card h3 {
         font-size: 1.1rem;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
       }
 
       .capability-card p,
       .strategy-card p,
       .model-card p {
-        color: #475569;
+        color: var(--text-muted);
         line-height: 1.6;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
       }
 
       .capability-card ul,
       .model-card ul {
         margin: 0;
         padding-left: 18px;
-        color: #334155;
+        color: var(--text-strong);
         line-height: 1.5;
       }
 
       .strategy-meta {
-        color: #1d4ed8;
+        color: var(--primary);
         font-size: 0.9rem;
-        font-weight: 500;
+        font-weight: 600;
       }
 
       .workflow {
         display: grid;
-        gap: 16px;
+        gap: 18px;
       }
 
       .workflow-step {
@@ -275,17 +335,201 @@
       .workflow-step span {
         display: inline-block;
         background: rgba(37, 99, 235, 0.12);
-        color: #1d4ed8;
-        font-size: 0.85rem;
-        font-weight: 600;
-        padding: 2px 10px;
+        color: var(--primary);
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 4px 12px;
         border-radius: 999px;
         margin-bottom: 6px;
+        letter-spacing: 0.08em;
       }
 
       .workflow-step p {
-        color: #475569;
+        color: var(--text-muted);
         line-height: 1.6;
+      }
+
+      .stat-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        margin-bottom: 12px;
+      }
+
+      .stat-card {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.12),
+          rgba(124, 58, 237, 0.08)
+        );
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(37, 99, 235, 0.25);
+        padding: 18px 20px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .stat-label {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+
+      .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-strong);
+      }
+
+      .stat-hint {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      .data-card {
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: var(--radius-md);
+        padding: 18px 20px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      }
+
+      .data-card + .data-card {
+        margin-top: 0;
+      }
+
+      caption {
+        text-align: left;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: var(--text-strong);
+        letter-spacing: 0.04em;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+      }
+
+      .data-table thead th {
+        background: rgba(37, 99, 235, 0.08);
+        color: var(--text-strong);
+        font-weight: 600;
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+      }
+
+      .data-table tbody td {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+        padding: 10px 14px;
+      }
+
+      .data-table tbody tr:nth-child(even) {
+        background: rgba(15, 23, 42, 0.03);
+      }
+
+      .data-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .tag-cloud {
+        margin-top: 22px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .tag-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.06);
+        color: var(--text-strong);
+        font-size: 0.85rem;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+      }
+
+      .card-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-strong);
+        margin-bottom: 12px;
+      }
+
+      .sub-card {
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        border-radius: var(--radius-md);
+        padding: 16px 18px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        margin-bottom: 16px;
+      }
+
+      .card-separator {
+        height: 1px;
+        margin: 16px 0;
+        background: rgba(148, 163, 184, 0.28);
+      }
+
+      .highlight-card {
+        padding: 20px;
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(226, 232, 240, 0.7);
+        background: linear-gradient(
+          120deg,
+          rgba(248, 250, 252, 0.85),
+          rgba(255, 255, 255, 0.72)
+        );
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.12);
+        color: var(--primary);
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .result .highlight-card {
+        margin-top: 10px;
+      }
+
+      @media (max-width: 720px) {
+        .container {
+          padding: 0 18px 60px;
+        }
+
+        .panel {
+          padding: 24px;
+        }
+
+        header h1 {
+          letter-spacing: 0.08em;
+        }
       }
     </style>
   </head>
@@ -400,7 +644,7 @@
           集成策略地图
           <span class="badge">自适应融合与单模直推一览</span>
         </h2>
-        <p class="muted">
+        <p class="section-lead">
           策略描述与权重来自后端实时同步，可帮助快速理解不同组合在当前数据下的决策特点。
         </p>
         <div id="strategy-overview">
@@ -413,7 +657,7 @@
           模型家族能力
           <span class="badge">基础模型优势速览</span>
         </h2>
-        <p class="muted">
+        <p class="section-lead">
           所有基础模型均由 <code>ModelManager</code> 统一训练与调度，以下亮点帮助快速匹配业务场景。
         </p>
         <div id="model-hub">
@@ -450,15 +694,20 @@
           数据概览
           <span class="badge">自动特征工程与质量扫描</span>
         </h2>
+        <p class="section-lead">
+          自动梳理数据质量、特征保留情况与集成权重，为后续建模提供清晰的事实基础。
+        </p>
+        <div class="stat-grid" id="dataset-stats"></div>
         <div class="grid-two">
-          <div id="dataset-report"></div>
-          <div id="feature-summary"></div>
+          <div id="dataset-report" class="data-card"></div>
+          <div id="feature-summary" class="data-card"></div>
         </div>
-        <div class="grid-two" style="margin-top: 18px;">
-          <div id="ensemble-weights"></div>
-          <div id="stacking-weights"></div>
+        <div class="grid-two" style="margin-top: 20px;">
+          <div id="ensemble-weights" class="data-card"></div>
+          <div id="stacking-weights" class="data-card"></div>
         </div>
-        <div id="correlation-alerts" style="margin-top: 16px;"></div>
+        <div id="retained-features" class="data-card tag-cloud"></div>
+        <div id="correlation-alerts" style="margin-top: 18px;"></div>
       </section>
 
       <section class="panel" id="metrics-panel">
@@ -466,7 +715,7 @@
           模型评估指标
           <span class="badge">全栈集成学习</span>
         </h2>
-        <div id="metrics-table"></div>
+        <div id="metrics-table" class="data-card"></div>
       </section>
 
       <section class="panel" id="insights-panel">
@@ -475,8 +724,8 @@
           <span class="badge">SHAP &amp; 置换重要性</span>
         </h2>
         <div class="grid-two">
-          <div id="permutation-importance"></div>
-          <div id="shap-importance"></div>
+          <div id="permutation-importance" class="data-card"></div>
+          <div id="shap-importance" class="data-card"></div>
         </div>
       </section>
 
@@ -485,7 +734,7 @@
           优化算法表现
           <span class="badge">多策略博弈</span>
         </h2>
-        <div id="optimization-results"></div>
+        <div id="optimization-results" class="data-card"></div>
       </section>
 
       <section class="panel" id="monitor-panel">
@@ -493,7 +742,8 @@
           过程监控示例
           <span class="badge">动态阈值自适应</span>
         </h2>
-        <div id="monitor-log"></div>
+        <div class="highlight-card" id="monitor-threshold"></div>
+        <div id="monitor-log" class="data-card"></div>
       </section>
     </div>
 
@@ -596,7 +846,7 @@
               `<tr>${row.map((cell) => `<td>${cell}</td>`).join('')}</tr>`,
             )
             .join('')}</tbody>`;
-        return `<table>${thead}${tbody}</table>`;
+        return `<table class="data-table">${thead}${tbody}</table>`;
       }
 
       function formatWeightPair(weight) {
@@ -718,6 +968,7 @@
           input.step = 'any';
           input.id = id;
           input.required = true;
+          input.placeholder = '请输入数值';
           input.dataset.feature = feature;
           wrapper.appendChild(input);
           container.appendChild(wrapper);
@@ -727,7 +978,7 @@
         strategies.forEach((strategy) => {
           const option = document.createElement('option');
           option.value = strategy;
-          option.textContent = strategy;
+          option.textContent = strategyDisplayNames[strategy] || strategy;
           select.appendChild(option);
         });
       }
@@ -736,69 +987,167 @@
         if (!report) {
           return;
         }
+        const formatInteger = (value) => {
+          const num = Number(value);
+          if (!Number.isFinite(num)) {
+            return '-';
+          }
+          return new Intl.NumberFormat('zh-CN').format(Math.round(num));
+        };
+
+        const statsContainer = document.getElementById('dataset-stats');
+        if (statsContainer) {
+          const retainedFeatures = report.retained_features || [];
+          const sampleCount = report.n_rows ?? 0;
+          const engineeredCount = Math.max(
+            retainedFeatures.length - (state.features?.length || 0),
+            0,
+          );
+          const missingValues = Object.values(report.missing_rate || {});
+          const avgMissing =
+            missingValues.length > 0
+              ? missingValues.reduce(
+                  (acc, value) => acc + Number(value || 0),
+                  0,
+                ) / missingValues.length
+              : 0;
+          const qualityScore = Math.max(0, 100 - avgMissing * 100);
+          const highCorrCount = (report.high_correlation_pairs || []).length;
+          const stats = [
+            {
+              label: '清洗后样本',
+              value: formatInteger(sampleCount),
+              hint: '用于训练与验证的记录数',
+            },
+            {
+              label: '建模特征',
+              value: formatInteger(retainedFeatures.length),
+              hint:
+                engineeredCount > 0
+                  ? `含派生特征 ${formatInteger(engineeredCount)} 项`
+                  : '以业务关键字段为主',
+            },
+            {
+              label: '数据稳定度',
+              value: `${qualityScore.toFixed(1)}%`,
+              hint:
+                highCorrCount > 0
+                  ? `高相关特征对：${formatInteger(highCorrCount)} 组`
+                  : '已自动消除高共线性干扰',
+            },
+          ];
+          statsContainer.innerHTML = stats
+            .map(
+              (item) => `
+                <div class="stat-card">
+                  <span class="stat-label">${item.label}</span>
+                  <span class="stat-value">${item.value}</span>
+                  <span class="stat-hint">${item.hint}</span>
+                </div>
+              `,
+            )
+            .join('');
+        }
+
         const reportDiv = document.getElementById('dataset-report');
-        const rows = Object.entries(report.missing_rate || {}).map(
-          ([feature, value]) => [feature, `${(value * 100).toFixed(2)}%`],
-        );
-        rows.unshift(['记录数', report.n_rows ?? 0]);
-        reportDiv.innerHTML = `<caption>数据质量</caption>${createTable(
-          ['指标', '数值'],
-          rows,
-        )}`;
+        if (reportDiv) {
+          const rows = Object.entries(report.missing_rate || {})
+            .sort(([, a], [, b]) => Number(b) - Number(a))
+            .map(([feature, value]) => [
+              feature,
+              `${(Number(value) * 100).toFixed(2)}%`,
+            ])
+            .slice(0, 12);
+          reportDiv.innerHTML = `
+            <p class="card-title">字段缺失率（Top12）</p>
+            ${createTable(['特征', '缺失率'], rows)}
+          `;
+        }
 
         const weightDiv = document.getElementById('ensemble-weights');
-        const weightRows = Object.entries(weights || {}).map(([name, pair]) => [
-          name,
-          `${(pair.xgb * 100).toFixed(1)}%`,
-          `${(pair.rf * 100).toFixed(1)}%`,
-        ]);
-        weightDiv.innerHTML =
-          `<caption>双模型组合权重（XGBoost / 随机森林）</caption>${createTable(
-            ['策略', 'XGB 权重', 'RF 权重'],
-            weightRows,
-          )}`;
+        if (weightDiv) {
+          const weightRows = Object.entries(weights || {}).map(([name, pair]) => [
+            strategyDisplayNames[name] || name,
+            `${(pair.xgb * 100).toFixed(1)}%`,
+            `${(pair.rf * 100).toFixed(1)}%`,
+          ]);
+          weightDiv.innerHTML = `
+            <p class="card-title">双模型组合权重</p>
+            ${createTable(['策略', 'XGB 权重', 'RF 权重'], weightRows)}
+          `;
+        }
 
         const stackingDiv = document.getElementById('stacking-weights');
-        const stackRows = Object.entries(stackingWeights || {}).map(
-          ([name, value]) => [name, `${(value * 100).toFixed(1)}%`],
-        );
-        stackingDiv.innerHTML =
-          `<caption>Stacking 元学习权重</caption>${createTable(
-            ['基础模型', '权重贡献'],
-            stackRows,
-          )}`;
+        if (stackingDiv) {
+          const stackRows = Object.entries(stackingWeights || {})
+            .sort(([, a], [, b]) => Number(b) - Number(a))
+            .map(([name, value]) => [
+              strategyDisplayNames[name] || name.toUpperCase(),
+              `${(value * 100).toFixed(1)}%`,
+            ]);
+          stackingDiv.innerHTML = `
+            <p class="card-title">Stacking 元学习权重</p>
+            ${createTable(['基础模型', '权重贡献'], stackRows)}
+          `;
+        }
 
         const summaryDiv = document.getElementById('feature-summary');
-        const summaryEntries = Object.entries(report.feature_summary || {})
-          .slice(0, 8)
-          .map(([feature, stats]) => [
-            feature,
-            Number(stats.mean).toFixed(2),
-            Number(stats.std).toFixed(2),
-            Number(stats.min).toFixed(2),
-            Number(stats.max).toFixed(2),
-          ]);
-        summaryDiv.innerHTML =
-          `<caption>特征统计摘要（前 8 项）</caption>${createTable(
-            ['特征', '均值', '标准差', '最小值', '最大值'],
-            summaryEntries,
-          )}`;
+        if (summaryDiv) {
+          const summaryEntries = Object.entries(report.feature_summary || {})
+            .slice(0, 8)
+            .map(([feature, stats]) => [
+              feature,
+              Number(stats.mean).toFixed(2),
+              Number(stats.std).toFixed(2),
+              Number(stats.min).toFixed(2),
+              Number(stats.max).toFixed(2),
+            ]);
+          summaryDiv.innerHTML = `
+            <p class="card-title">特征统计摘要（前 8 项）</p>
+            ${createTable(['特征', '均值', '标准差', '最小值', '最大值'], summaryEntries)}
+          `;
+        }
+
+        const retainedDiv = document.getElementById('retained-features');
+        if (retainedDiv) {
+          const retained = report.retained_features || [];
+          if (retained.length) {
+            const limit = 24;
+            const visible = retained.slice(0, limit);
+            const hiddenCount = Math.max(retained.length - visible.length, 0);
+            retainedDiv.innerHTML = `
+              <span class="card-title">最终建模特征 (${retained.length})</span>
+              <div class="tag-list">
+                ${visible.map((name) => `<span class="tag">${name}</span>`).join('')}
+              </div>
+              ${
+                hiddenCount
+                  ? `<p class="muted">其余 ${hiddenCount} 项已折叠，可在后端配置中查看完整列表。</p>`
+                  : ''
+              }
+            `;
+          } else {
+            retainedDiv.innerHTML = '<p class="muted">暂无特征信息。</p>';
+          }
+        }
 
         const correlationDiv = document.getElementById('correlation-alerts');
-        const correlationRows = (report.high_correlation_pairs || [])
-          .slice(0, 6)
-          .map((item) => [
-            item.feature_a,
-            item.feature_b,
-            item.correlation.toFixed(3),
-          ]);
-        correlationDiv.innerHTML =
-          `<div class="highlight-card">${createTable(
-            ['特征 A', '特征 B', '相关系数'],
-            correlationRows,
-          )}
-            <p class="muted">若相关性过高，将自动进行特征降维处理。</p>
-          </div>`;
+        if (correlationDiv) {
+          const correlationRows = (report.high_correlation_pairs || [])
+            .slice(0, 6)
+            .map((item) => [
+              item.feature_a,
+              item.feature_b,
+              Number(item.correlation).toFixed(3),
+            ]);
+          correlationDiv.innerHTML = `
+            <div class="highlight-card">
+              <p class="card-title">高相关特征预警</p>
+              ${createTable(['特征 A', '特征 B', '相关系数'], correlationRows)}
+              <p class="muted">若相关性过高，将自动进行特征降维处理。</p>
+            </div>
+          `;
+        }
       }
 
       function renderMetrics(metrics) {
@@ -842,11 +1191,10 @@
           item.feature,
           item.importance.toFixed(4),
         ]);
-        container.innerHTML =
-          `<caption>置换重要性（随机森林）</caption>${createTable(
-            ['特征', '重要性'],
-            rows,
-          )}`;
+        container.innerHTML = `
+          <p class="card-title">置换重要性（随机森林）</p>
+          ${createTable(['特征', '重要性'], rows)}
+        `;
       }
 
       function renderShap(shap) {
@@ -861,15 +1209,13 @@
               item.feature,
               item.importance.toFixed(4),
             ]);
-            const panelStyle = 'box-shadow:none;padding:0;margin:0 0 16px 0;';
-            return [
-              `<div class="panel" style="${panelStyle}">`,
-              `<caption>${name.toUpperCase()} 平均 |SHAP|</caption>${createTable(
-                ['特征', '影响力'],
-                rows,
-              )}`,
-              '</div>',
-            ].join('');
+            const label = strategyDisplayNames[name] || name.toUpperCase();
+            return `
+              <div class="sub-card">
+                <p class="card-title">${label} 平均 |SHAP|</p>
+                ${createTable(['特征', '影响力'], rows)}
+              </div>
+            `;
           })
           .join('');
         container.innerHTML = sections;
@@ -895,20 +1241,29 @@
           item.best_val,
           item.iterations,
         ]);
-        container.innerHTML =
-          `<caption>最新实验最佳结果</caption>${createTable(
-            ['算法', '最佳参数', '目标值'],
-            experimentRows,
-          )}
-    <caption>实验日志概览</caption>${createTable(
-      ['算法', '最佳参数', '目标值', '迭代数'],
-      summaryRows,
-    )}`;
+        container.innerHTML = `
+          <p class="card-title">最新实验最佳结果</p>
+          ${createTable(['算法', '最佳参数', '目标值'], experimentRows)}
+          <div class="card-separator"></div>
+          <p class="card-title">实验日志概览</p>
+          ${createTable(['算法', '最佳参数', '目标值', '迭代数'], summaryRows)}
+        `;
       }
 
       function renderMonitor(log) {
         const container = document.getElementById('monitor-log');
-        if (!log || !log.log) {
+        const thresholdCard = document.getElementById('monitor-threshold');
+        if (thresholdCard) {
+          if (log && typeof log.threshold === 'number') {
+            thresholdCard.innerHTML = `
+              <div class="status-pill">报警阈值 ${log.threshold.toFixed(2)}</div>
+              <p class="muted">超过阈值即触发多策略协同优化。</p>
+            `;
+          } else {
+            thresholdCard.innerHTML = '<p class="muted">监控阈值未定义。</p>';
+          }
+        }
+        if (!log || !Array.isArray(log.log) || !log.log.length) {
           container.innerHTML = '<p class="muted">暂无监控记录。</p>';
           return;
         }
@@ -920,13 +1275,19 @@
             ? `[${item.action.map((value) => value.toFixed(2)).join(', ')}]`
             : '无',
           item.value.toFixed(2),
-          item.forced ? '强制调整' : '',
+          item.forced
+            ? '强制调优'
+            : item.action
+            ? '自动调优'
+            : '常规监控',
         ]);
-        container.innerHTML =
-          `<p class="muted">当前阈值：${log.threshold.toFixed(2)}</p>${createTable(
-            ['步骤', '实际值', '预测值', '优化动作', '输出', '说明'],
+        container.innerHTML = `
+          <p class="card-title">监控日志</p>
+          ${createTable(
+            ['步骤', '实际值', '预测值', '优化动作', '目标函数', '状态'],
             rows,
-          )}`;
+          )}
+        `;
       }
 
       async function initDashboard() {
