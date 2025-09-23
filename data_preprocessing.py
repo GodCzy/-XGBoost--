@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import sqlite3
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
@@ -83,6 +84,96 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _safe_divide(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
+    denom = denominator.replace(0, np.nan)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        result = numerator / denom
+    return result.replace([np.inf, -np.inf], np.nan)
+
+
+def domain_specific_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Create ratio and log features that capture domain heuristics."""
+
+    df = df.copy()
+    if {"electricity", "gdp_total"}.issubset(df.columns):
+        df["electricity_intensity"] = _safe_divide(df["electricity"], df["gdp_total"])
+    if {"coal_consumption", "gdp_total"}.issubset(df.columns):
+        df["coal_intensity"] = _safe_divide(df["coal_consumption"], df["gdp_total"])
+    if {"gdp_total", "population"}.issubset(df.columns):
+        df["gdp_per_capita"] = _safe_divide(df["gdp_total"], df["population"])
+    if {"electricity", "population"}.issubset(df.columns):
+        df["electricity_per_capita"] = _safe_divide(df["electricity"], df["population"])
+    if "gdp_total" in df.columns:
+        df["log_gdp_total"] = np.log1p(df["gdp_total"].clip(lower=0))
+    if "electricity" in df.columns:
+        df["log_electricity"] = np.log1p(df["electricity"].clip(lower=0))
+    return df
+
+
+def _high_correlation_pairs(
+    df: pd.DataFrame, threshold: float = 0.9
+) -> List[Dict[str, float]]:
+    numeric = df.select_dtypes("number")
+    if numeric.empty:
+        return []
+    corr = numeric.corr().abs()
+    pairs: List[Dict[str, float]] = []
+    cols = corr.columns
+    for i, col_a in enumerate(cols[:-1]):
+        for j in range(i + 1, len(cols)):
+            value = corr.iloc[i, j]
+            if value > threshold:
+                pairs.append(
+                    {
+                        "feature_a": col_a,
+                        "feature_b": cols[j],
+                        "correlation": float(value),
+                    }
+                )
+    pairs.sort(key=lambda item: item["correlation"], reverse=True)
+    return pairs
+
+
+def reduce_multicollinearity(df: pd.DataFrame, threshold: float = 0.95) -> pd.DataFrame:
+    """Drop highly correlated columns to stabilise downstream models."""
+
+    numeric = df.select_dtypes("number")
+    if numeric.empty:
+        return df
+    corr = numeric.corr().abs()
+    upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+    to_drop: List[str] = [
+        column for column in upper.columns if any(upper[column] > threshold)
+    ]
+    return df.drop(columns=to_drop, errors="ignore")
+
+
+def _feature_summary(df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
+    summary: Dict[str, Dict[str, float]] = {}
+    numeric = df.select_dtypes("number")
+    if numeric.empty:
+        return summary
+    desc = numeric.describe().transpose()
+    for feature, stats in desc.iterrows():
+        summary[feature] = {
+            "mean": float(stats["mean"]),
+            "std": float(stats["std"]),
+            "min": float(stats["min"]),
+            "max": float(stats["max"]),
+        }
+    return summary
+
+
+def build_feature_frame(df: pd.DataFrame, drop_target: bool = True) -> pd.DataFrame:
+    """Apply feature engineering pipeline without scaling."""
+
+    engineered = domain_specific_features(df)
+    engineered = engineer_features(engineered)
+    if drop_target:
+        return engineered.drop(columns=["emission"], errors="ignore")
+    return engineered
+
+
 def preprocess(
     df: pd.DataFrame,
 ) -> Tuple[pd.DataFrame, pd.Series, StandardScaler, Dict[str, Dict[str, float]]]:
@@ -92,9 +183,14 @@ def preprocess(
     df = _coerce_numeric_like_columns(df)
     report = quality_report(df)
     df = clean_data(df)
+    df = domain_specific_features(df)
     df = engineer_features(df)
-    features = df.drop(columns=["emission"])
+    features_raw = df.drop(columns=["emission"])
+    report["high_correlation_pairs"] = _high_correlation_pairs(features_raw)
+    features = reduce_multicollinearity(features_raw)
     target = df["emission"]
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(features)
+    report["retained_features"] = list(features.columns)
+    report["feature_summary"] = _feature_summary(features)
     return X_scaled, target, scaler, report

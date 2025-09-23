@@ -10,7 +10,7 @@ from flask import Flask, jsonify, render_template, request
 from sklearn.model_selection import train_test_split
 
 from config import Config
-from data_preprocessing import clean_data, engineer_features, preprocess
+from data_preprocessing import build_feature_frame, clean_data, preprocess
 from emission_predictor import ModelManager
 from experiment_manager import ExperimentManager
 from monitoring import ProcessMonitor
@@ -212,6 +212,7 @@ def _prepare_training_context() -> Dict[str, Any]:
         "base_features": base_features,
         "feature_names": feature_names,
         "ensemble_weights": model.ensemble_weights(),
+        "stacking_weights": model.stacking_weights(),
         "strategies": model.available_strategies(),
         "monitor_log": monitor_log,
         "experiments": experiments,
@@ -241,6 +242,7 @@ def metadata():
             "report": TRAINING_CONTEXT["report"],
             "strategies": TRAINING_CONTEXT["strategies"],
             "ensemble_weights": TRAINING_CONTEXT["ensemble_weights"],
+            "stacking_weights": TRAINING_CONTEXT.get("stacking_weights", {}),
         }
     )
 
@@ -287,6 +289,7 @@ def predict():
         payload = request.get_json(force=True)
         strategy = request.args.get("strategy", "mean")
         all_strategies = request.args.get("all_strategies", "false").lower() == "true"
+        include_uncertainty = request.args.get("uncertainty", "false").lower() == "true"
         if isinstance(payload, dict) and not all(
             isinstance(v, (int, float)) for v in payload.values()
         ):
@@ -296,19 +299,37 @@ def predict():
         df = clean_data(df)
         if df.empty:
             raise ValueError("No valid input data")
-        df = engineer_features(df)
-        df = df.reindex(
+        df = build_feature_frame(df, drop_target=False)
+        features = df.drop(columns=["emission"], errors="ignore")
+        features = features.reindex(
             columns=TRAINING_CONTEXT["scaler"].feature_names_in_, fill_value=0.0
         )
-        X_in = TRAINING_CONTEXT["scaler"].transform(df)
+        X_in = TRAINING_CONTEXT["scaler"].transform(features)
         model: ModelManager = TRAINING_CONTEXT["model"]
         if all_strategies:
             preds = {
                 name: model.predict(X_in, strategy=name).tolist()
                 for name in model.available_strategies()
             }
-            return jsonify({"predictions": preds})
+            response_payload: Dict[str, Any] = {"predictions": preds}
+            if include_uncertainty:
+                interval = model.predict_with_uncertainty(X_in, strategy=strategy)
+                response_payload["uncertainty"] = {
+                    "strategy": strategy,
+                    **{key: value.tolist() for key, value in interval.items()},
+                }
+            return jsonify(response_payload)
         preds = model.predict(X_in, strategy=strategy)
+        if include_uncertainty:
+            interval = model.predict_with_uncertainty(X_in, strategy=strategy)
+            return jsonify(
+                {
+                    "prediction": preds.tolist(),
+                    "strategy": strategy,
+                    "lower": interval["lower"].tolist(),
+                    "upper": interval["upper"].tolist(),
+                }
+            )
         return jsonify({"prediction": preds.tolist(), "strategy": strategy})
     except Exception as exc:  # pragma: no cover - runtime safety
         logger.exception("Prediction failed")
