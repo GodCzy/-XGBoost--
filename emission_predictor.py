@@ -8,7 +8,14 @@ from typing import Dict
 
 import joblib
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor
+from scipy.stats import t
+from sklearn.base import clone
+from sklearn.ensemble import (
+    GradientBoostingRegressor,
+    HistGradientBoostingRegressor,
+    RandomForestRegressor,
+    StackingRegressor,
+)
 from sklearn.inspection import permutation_importance
 from sklearn.metrics import (
     mean_absolute_error,
@@ -18,6 +25,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPRegressor
+from sklearn.linear_model import RidgeCV
 from xgboost import XGBRegressor
 
 try:  # pragma: no cover - optional dependency
@@ -33,6 +41,7 @@ class ModelManager:
     seed: int = 42
     models: dict[str, object] = field(default_factory=dict, init=False)
     ensemble_weights_: Dict[str, np.ndarray] = field(default_factory=dict, init=False)
+    meta_model: StackingRegressor | None = field(default=None, init=False)
 
     def __post_init__(self) -> None:
         np.random.seed(self.seed)
@@ -42,8 +51,11 @@ class ModelManager:
             "mlp": MLPRegressor(
                 hidden_layer_sizes=(64, 32), max_iter=500, random_state=self.seed
             ),
+            "gbr": GradientBoostingRegressor(random_state=self.seed),
+            "hgb": HistGradientBoostingRegressor(random_state=self.seed),
         }
         self.ensemble_weights_ = {}
+        self.meta_model = None
 
     # ------------------------------------------------------------------
     # Training & prediction
@@ -69,6 +81,7 @@ class ModelManager:
             model.fit(X_arr, y_arr)
 
         self._compute_residual_weights(X_arr, y_arr)
+        self._train_stacking_model(X_arr, y_arr)
 
     def _base_predictions(self, X) -> Dict[str, np.ndarray]:
         return {name: model.predict(X) for name, model in self.models.items()}
@@ -85,6 +98,11 @@ class ModelManager:
                 weights = np.array([0.5, 0.5])
             base = np.column_stack([preds["xgb"], preds["rf"]])
             return base @ weights
+
+        if strategy == "stacking":
+            if self.meta_model is None:
+                raise ValueError("Stacking model is not available before training")
+            return self.meta_model.predict(X)
 
         if strategy in preds:
             return preds[strategy]
@@ -106,7 +124,7 @@ class ModelManager:
         results["ensembles"]["mean"] = self._metric_summary(
             y, self.predict(X, strategy="mean")
         )
-        for strategy in ("equal", "residual", "self_adaption"):
+        for strategy in ("equal", "residual", "self_adaption", "stacking"):
             results["ensembles"][strategy] = self._metric_summary(
                 y, self.predict(X, strategy=strategy)
             )
@@ -140,16 +158,30 @@ class ModelManager:
         os.makedirs(path, exist_ok=True)
         for name, model in self.models.items():
             joblib.dump(model, os.path.join(path, f"{name}_{version}.joblib"))
+        if self.meta_model is not None:
+            joblib.dump(self.meta_model, os.path.join(path, f"stack_{version}.joblib"))
 
     def load(self, version: str, path: str = "models") -> None:
         for name in self.models:
             self.models[name] = joblib.load(
                 os.path.join(path, f"{name}_{version}.joblib")
             )
+        stack_path = os.path.join(path, f"stack_{version}.joblib")
+        if os.path.exists(stack_path):
+            self.meta_model = joblib.load(stack_path)
+        else:
+            self.meta_model = None
 
     # ------------------------------------------------------------------
     def available_strategies(self) -> list[str]:
-        return ["mean", "equal", "residual", "self_adaption", *self.models.keys()]
+        return [
+            "mean",
+            "equal",
+            "residual",
+            "self_adaption",
+            "stacking",
+            *self.models.keys(),
+        ]
 
     def ensemble_weights(self) -> Dict[str, Dict[str, float]]:
         weights = {}
@@ -159,6 +191,45 @@ class ModelManager:
                 "rf": float(value[1]),
             }
         return weights
+
+    def stacking_weights(self) -> Dict[str, float]:
+        if self.meta_model is None or not hasattr(self.meta_model, "final_estimator_"):
+            return {}
+        estimator = self.meta_model.final_estimator_
+        if not hasattr(estimator, "coef_"):
+            return {}
+        coefs = np.atleast_1d(estimator.coef_).ravel()
+        base_names = [name for name, _ in self.meta_model.estimators]
+        if coefs.size != len(base_names):
+            return {}
+        norm = np.sum(np.abs(coefs)) or 1.0
+        return {name: float(coef / norm) for name, coef in zip(base_names, coefs)}
+
+    def predict_with_uncertainty(
+        self, X, strategy: str = "self_adaption", confidence: float = 0.9
+    ) -> Dict[str, np.ndarray]:
+        """Return prediction along with simple t-interval uncertainty bounds."""
+
+        central = np.asarray(self.predict(X, strategy=strategy))
+        base_preds = self._base_predictions(X)
+        matrix = np.column_stack(list(base_preds.values()))
+        if matrix.ndim != 2 or matrix.shape[1] < 2:
+            return {
+                "prediction": central,
+                "lower": central,
+                "upper": central,
+            }
+        std = matrix.std(axis=1, ddof=1)
+        se = np.nan_to_num(std / np.sqrt(matrix.shape[1]), nan=0.0)
+        df = max(matrix.shape[1] - 1, 1)
+        critical = t.ppf((1 + confidence) / 2, df)
+        lower = central - critical * se
+        upper = central + critical * se
+        return {
+            "prediction": central,
+            "lower": lower,
+            "upper": upper,
+        }
 
     # ------------------------------------------------------------------
     def _compute_self_adaptive_weights(self, X_val, y_val) -> None:
@@ -193,6 +264,21 @@ class ModelManager:
         else:
             weights = np.array([mse_rf / total, mse_xgb / total])
         self.ensemble_weights_["residual"] = weights
+
+    def _train_stacking_model(self, X, y) -> None:
+        if len(X) < 5:
+            self.meta_model = None
+            return
+        estimators = [(name, clone(model)) for name, model in self.models.items()]
+        final_estimator = RidgeCV(alphas=np.logspace(-3, 3, 7))
+        stacking = StackingRegressor(
+            estimators=estimators,
+            final_estimator=final_estimator,
+            passthrough=False,
+            cv=5,
+        )
+        stacking.fit(X, y)
+        self.meta_model = stacking
 
     @staticmethod
     def _metric_summary(y_true, y_pred) -> Dict[str, float]:

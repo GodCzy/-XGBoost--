@@ -70,6 +70,9 @@ def main():
     data = load_training_frame(config)
     X, y, _, report = preprocess(data)
     logger.info("Data quality report: %s", report)
+    if report.get("feature_summary"):
+        top_features = list(report["feature_summary"].items())[:3]
+        logger.info("Top feature summary: %s", top_features)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
@@ -79,6 +82,7 @@ def main():
     metrics = predictor.evaluate(X_test, y_test)
     logger.info("Evaluation metrics: %s", metrics)
     logger.info("Ensemble weights: %s", predictor.ensemble_weights())
+    logger.info("Stacking weights: %s", predictor.stacking_weights())
 
     try:
         shap_vals = predictor.shap_values(X_train[:10], strategy="self_adaption")
@@ -90,6 +94,16 @@ def main():
         X_test, y_test, model_name="rf", n_repeats=5
     )
     logger.info("Permutation importance: %s", perm_imp)
+
+    interval = predictor.predict_with_uncertainty(
+        X_test[:5], strategy="stacking", confidence=0.9
+    )
+    logger.info(
+        "Stacking predictions with uncertainty: central=%s lower=%s upper=%s",
+        interval["prediction"],
+        interval["lower"],
+        interval["upper"],
+    )
 
     predictor.save(version="v1", path=config.models_dir)
     predictor.load(version="v1", path=config.models_dir)

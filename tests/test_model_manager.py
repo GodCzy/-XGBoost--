@@ -1,4 +1,3 @@
-import numpy as np
 from sklearn.model_selection import train_test_split
 
 from data_preprocessing import preprocess
@@ -27,7 +26,12 @@ def test_model_manager_train_evaluate_predict():
     assert "self_adaption" in weights and "residual" in weights
 
     strategies = manager.available_strategies()
-    for strategy in ("equal", "self_adaption", "rf"):
+    for strategy in ("equal", "self_adaption", "rf", "stacking"):
         assert strategy in strategies
         preds_strategy = manager.predict(X_test, strategy=strategy)
         assert preds_strategy.shape[0] == y_test.shape[0]
+
+    interval = manager.predict_with_uncertainty(X_test[:5], strategy="stacking")
+    assert interval["prediction"].shape[0] == 5
+    assert interval["lower"].shape == interval["upper"].shape
+    assert manager.stacking_weights()
