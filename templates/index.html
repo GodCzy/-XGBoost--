@@ -123,6 +123,14 @@
         box-shadow: 0 12px 20px rgba(37, 99, 235, 0.25);
       }
 
+      code {
+        font-family: 'Fira Code', 'Consolas', monospace;
+        background: rgba(15, 23, 42, 0.06);
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+      }
+
       .toggle {
         display: flex;
         align-items: center;
@@ -201,6 +209,84 @@
         border: 1px solid rgba(226, 232, 240, 0.9);
         background: rgba(248, 250, 252, 0.8);
       }
+
+      .capability-grid,
+      .strategy-grid,
+      .model-grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      .capability-card,
+      .strategy-card,
+      .model-card {
+        padding: 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+
+      .capability-card h3,
+      .strategy-card h3,
+      .model-card h3 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+      }
+
+      .capability-card p,
+      .strategy-card p,
+      .model-card p {
+        color: #475569;
+        line-height: 1.6;
+        margin-bottom: 10px;
+      }
+
+      .capability-card ul,
+      .model-card ul {
+        margin: 0;
+        padding-left: 18px;
+        color: #334155;
+        line-height: 1.5;
+      }
+
+      .strategy-meta {
+        color: #1d4ed8;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .workflow {
+        display: grid;
+        gap: 16px;
+      }
+
+      .workflow-step {
+        border-left: 3px solid rgba(37, 99, 235, 0.35);
+        padding-left: 16px;
+      }
+
+      .workflow-step h3 {
+        font-size: 1.05rem;
+        margin-bottom: 6px;
+      }
+
+      .workflow-step span {
+        display: inline-block;
+        background: rgba(37, 99, 235, 0.12);
+        color: #1d4ed8;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 999px;
+        margin-bottom: 6px;
+      }
+
+      .workflow-step p {
+        color: #475569;
+        line-height: 1.6;
+      }
     </style>
   </head>
   <body>
@@ -211,6 +297,129 @@
           一站式洞察数据质量、模型表现、特征影响与优化策略，实时掌握排放风险，先人一步做出高阶决策。
         </p>
       </header>
+
+      <section class="panel" id="capability-panel">
+        <h2>
+          平台能力全景
+          <span class="badge">数据 · 建模 · 优化 · 运维 一体化</span>
+        </h2>
+        <div class="capability-grid">
+          <article class="capability-card">
+            <h3>数据智能引擎</h3>
+            <p>
+              基于 <code>data_preprocessing.py</code> 的自动化流水线，确保不同来源的原始数据在分钟级完成治理。
+            </p>
+            <ul>
+              <li>CSV / SQLite 多源导入与中文字段智能映射。</li>
+              <li>缺失值填补、异常值剔除、数值化与标准化全流程。</li>
+              <li>构建平方项、比值、对数等领域特征并自动消除共线性。</li>
+            </ul>
+          </article>
+          <article class="capability-card">
+            <h3>模型融合引擎</h3>
+            <p>
+              <code>ModelManager</code> 同时管理五大回归器，并提供多种策略以满足不同业务场景的精度与稳定性需求。
+            </p>
+            <ul>
+              <li>mean / equal / residual / self_adaption / stacking 多策略一键切换。</li>
+              <li>输出 R²、MAPE、MAE、RMSE 全量评估指标与不确定性区间。</li>
+              <li>支持 SHAP 与 permutation importance 深入解释特征贡献。</li>
+            </ul>
+          </article>
+          <article class="capability-card">
+            <h3>优化决策大脑</h3>
+            <p>
+              <code>optimization.py</code> 与 <code>ExperimentManager</code> 组成的智能实验平台，为排放控制策略提供实时迭代能力。
+            </p>
+            <ul>
+              <li>内置 PSO、贝叶斯、遗传算法多策略对 <code>emission_objective</code> 迭代寻优。</li>
+              <li>实验日志、最优参数与目标值完整留痕，便于对比复盘。</li>
+              <li>ProcessMonitor 异常触发自动调优，阈值策略可通过 Config 自定义。</li>
+            </ul>
+          </article>
+          <article class="capability-card">
+            <h3>工程化运维保障</h3>
+            <p>
+              自带 API、模型版本化与测试脚本，帮助团队快速落地并持续交付。
+            </p>
+            <ul>
+              <li>Flask 服务暴露 /predict、/metadata 等接口即插即用。</li>
+              <li>模型工件通过 Joblib 版本化持久化，方便部署回滚。</li>
+              <li><code>main.py</code> 与 <code>tests/</code> 提供离线验证与冒烟测试保障。</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" id="workflow-panel">
+        <h2>
+          闭环工作流
+          <span class="badge">从数据到决策的每一步都可追溯</span>
+        </h2>
+        <div class="workflow">
+          <div class="workflow-step">
+            <span>Step 01</span>
+            <h3>数据导入与治理</h3>
+            <p>
+              <code>load_training_frame</code> 自动识别外部数据源，配合清洗、字段映射与缺失值处理，生成高质量原始数据集。
+            </p>
+          </div>
+          <div class="workflow-step">
+            <span>Step 02</span>
+            <h3>特征构建与筛选</h3>
+            <p>
+              通过比值、平方、对数等特征工程与共线性消除策略，形成可用于建模的稳健特征矩阵与质量报告。
+            </p>
+          </div>
+          <div class="workflow-step">
+            <span>Step 03</span>
+            <h3>多模型集成训练</h3>
+            <p>
+              <code>ModelManager</code> 统一训练随机森林、XGBoost、MLP 等模型，并自动计算集成权重与元学习 Stacking 模型。
+            </p>
+          </div>
+          <div class="workflow-step">
+            <span>Step 04</span>
+            <h3>智能优化与监控</h3>
+            <p>
+              ExperimentManager 运行多策略实验，ProcessMonitor 实时监听并触发 PSO / GA / 贝叶斯调优，形成动态阈值控制。
+            </p>
+          </div>
+          <div class="workflow-step">
+            <span>Step 05</span>
+            <h3>可视化与服务化交付</h3>
+            <p>
+              Flask API 与本驾驶舱页面提供在线预测、指标监控、特征洞察，帮助业务快速验证与部署减排策略。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="strategy-panel">
+        <h2>
+          集成策略地图
+          <span class="badge">自适应融合与单模直推一览</span>
+        </h2>
+        <p class="muted">
+          策略描述与权重来自后端实时同步，可帮助快速理解不同组合在当前数据下的决策特点。
+        </p>
+        <div id="strategy-overview">
+          <p class="muted">策略信息加载中…</p>
+        </div>
+      </section>
+
+      <section class="panel" id="model-panel">
+        <h2>
+          模型家族能力
+          <span class="badge">基础模型优势速览</span>
+        </h2>
+        <p class="muted">
+          所有基础模型均由 <code>ModelManager</code> 统一训练与调度，以下亮点帮助快速匹配业务场景。
+        </p>
+        <div id="model-hub">
+          <p class="muted">模型详情加载中…</p>
+        </div>
+      </section>
 
       <section class="panel" id="prediction-panel">
         <h2>
@@ -296,6 +505,81 @@
         stackingWeights: {},
       };
 
+      const strategyDisplayNames = {
+        mean: '鲁棒平均 (mean)',
+        equal: '等权融合 (equal)',
+        residual: '残差反向加权 (residual)',
+        self_adaption: '验证集自适应 (self_adaption)',
+        stacking: '元学习集成 (stacking)',
+        rf: '随机森林 (rf)',
+        xgb: 'XGBoost (xgb)',
+        mlp: '多层感知器 (mlp)',
+        gbr: '梯度提升回归 (gbr)',
+        hgb: '直方图梯度提升 (hgb)',
+      };
+
+      const strategyDescriptions = {
+        mean: '对所有基础模型输出求平均，提供稳健基线表现。',
+        equal:
+          'XGBoost 与随机森林固定等权融合，适合作为快速上线的集成策略。',
+        residual:
+          '根据残差动态分配 XGBoost / RF 权重，让误差更小的模型贡献更大。',
+        self_adaption:
+          '在验证集上搜索最佳权重，实现对当前数据分布的自适应融合。',
+        stacking:
+          '以 RidgeCV 作为元学习器堆叠全部基础模型，兼顾精度与泛化能力。',
+        rf: '基于袋装的树模型，擅长处理噪声与高维离散特征。',
+        xgb: '梯度提升树高效建模非线性关系，是解释与精度的平衡选择。',
+        mlp: '64×32 隐藏层的多层感知器，补充神经网络对复杂关系的表达力。',
+        gbr:
+          '传统梯度提升回归器，逐步逼近残差，为集成提供稳定基线。',
+        hgb:
+          '直方图梯度提升回归器，训练高效，适合大规模数据的快速建模。',
+      };
+
+      const baseModelDetails = {
+        rf: {
+          title: '随机森林（RandomForestRegressor）',
+          description: '通过袋装思想降低方差，对噪声与异常点具备出色鲁棒性。',
+          strengths: [
+            '自动子采样特征，配合 out-of-bag 机制缓解过拟合风险。',
+            '与置换重要性结合，能给出稳定可信的特征排序。',
+          ],
+        },
+        xgb: {
+          title: 'XGBoost 回归（XGBRegressor）',
+          description: '梯度提升框架，支持正则化与列采样，兼具速度与精度。',
+          strengths: [
+            '提供 SHAP 值，量化每个特征对排放预测的边际影响。',
+            '在多种融合策略中担纲主力模型，提升整体预测上限。',
+          ],
+        },
+        mlp: {
+          title: '多层感知器（MLPRegressor）',
+          description: '两层全连接网络 (64→32)，捕捉更复杂的非线性结构。',
+          strengths: [
+            '补充树模型难以覆盖的平滑连续关系，提升模型多样性。',
+            '在 Stacking 中提供神经网络视角，丰富集成表达能力。',
+          ],
+        },
+        gbr: {
+          title: '梯度提升回归（GradientBoostingRegressor）',
+          description: '传统 boosting 基线，逐步拟合残差以提升精度。',
+          strengths: [
+            '训练稳定、可解释性良好，适合做策略回溯与对比。',
+            '为堆叠模型提供稳健的中等复杂度预测信号。',
+          ],
+        },
+        hgb: {
+          title: '直方图梯度提升（HistGradientBoostingRegressor）',
+          description: '基于直方图加速的 boosting，实现更快的迭代效率。',
+          strengths: [
+            '对大数据量依然保持快速训练，支撑高频策略试验。',
+            '离散化直方图天然具备正则效果，提升泛化表现。',
+          ],
+        },
+      };
+
       function sanitizeId(name) {
         return name.replace(/[^a-zA-Z0-9_-]/g, '-');
       }
@@ -313,6 +597,105 @@
             )
             .join('')}</tbody>`;
         return `<table>${thead}${tbody}</table>`;
+      }
+
+      function formatWeightPair(weight) {
+        if (!weight) {
+          return '';
+        }
+        return Object.entries(weight)
+          .map(
+            ([name, value]) => `${name.toUpperCase()} ${(value * 100).toFixed(1)}%`,
+          )
+          .join(' · ');
+      }
+
+      function formatStackingWeights(weights) {
+        if (!weights) {
+          return '';
+        }
+        return Object.entries(weights)
+          .sort(([, a], [, b]) => b - a)
+          .map(
+            ([name, value]) => `${name.toUpperCase()} ${(value * 100).toFixed(1)}%`,
+          )
+          .join(' · ');
+      }
+
+      function renderStrategyMap(strategies, weights, stackingWeights) {
+        const container = document.getElementById('strategy-overview');
+        if (!container) {
+          return;
+        }
+        if (!strategies || !strategies.length) {
+          container.innerHTML = '<p class="muted">暂无策略信息。</p>';
+          return;
+        }
+        const unique = Array.from(new Set(strategies));
+        const baseKeys = Object.keys(baseModelDetails);
+        const ordered = [
+          ...unique.filter((name) => !baseKeys.includes(name)),
+          ...unique.filter((name) => baseKeys.includes(name)),
+        ];
+        const cards = ordered.map((name) => {
+          const title = strategyDisplayNames[name] || name.toUpperCase();
+          const description = strategyDescriptions[name] || '融合策略。';
+          const detailLines = [];
+          if (weights && weights[name]) {
+            detailLines.push(`融合权重：${formatWeightPair(weights[name])}`);
+          }
+          if (name === 'stacking') {
+            const stackingText = formatStackingWeights(stackingWeights);
+            if (stackingText) {
+              detailLines.push(`Stacking 权重：${stackingText}`);
+            }
+          }
+          if (stackingWeights && stackingWeights[name] != null && baseKeys.includes(name)) {
+            detailLines.push(
+              `在 Stacking 中的贡献：${(stackingWeights[name] * 100).toFixed(1)}%`,
+            );
+          }
+          const detail = detailLines.length
+            ? `<p class="strategy-meta">${detailLines.join('<br />')}</p>`
+            : '';
+          return `<article class="strategy-card"><h3>${title}</h3><p>${description}</p>${detail}</article>`;
+        });
+        container.innerHTML = `<div class="strategy-grid">${cards.join('')}</div>`;
+      }
+
+      function renderModelHub(strategies, stackingWeights = {}) {
+        const container = document.getElementById('model-hub');
+        if (!container) {
+          return;
+        }
+        const unique = Array.from(new Set(strategies || []));
+        const base = unique.filter((name) => baseModelDetails[name]);
+        if (!base.length) {
+          container.innerHTML = '<p class="muted">暂无基础模型信息。</p>';
+          return;
+        }
+        const cards = base.map((name) => {
+          const detail = baseModelDetails[name];
+          const items = detail.strengths
+            .map((item) => `<li>${item}</li>`)
+            .join('');
+          const stackingShare = stackingWeights[name];
+          const stackingInfo =
+            stackingShare != null
+              ? `<p class="strategy-meta">Stacking 权重贡献：${(
+                  stackingShare * 100
+                ).toFixed(1)}%</p>`
+              : '';
+          return [
+            `<article class="model-card">`,
+            `<h3>${detail.title}</h3>`,
+            `<p>${detail.description}</p>`,
+            `<ul>${items}</ul>`,
+            stackingInfo,
+            `</article>`,
+          ].join('');
+        });
+        container.innerHTML = `<div class="model-grid">${cards.join('')}</div>`;
       }
 
       async function fetchJSON(url) {
@@ -554,6 +937,12 @@
           state.weights = metadata.ensemble_weights || {};
           state.stackingWeights = metadata.stacking_weights || {};
           renderFeatureInputs(state.features, state.strategies);
+          renderStrategyMap(
+            state.strategies,
+            state.weights,
+            state.stackingWeights,
+          );
+          renderModelHub(state.strategies, state.stackingWeights);
           renderReport(
             metadata.report,
             state.weights,
