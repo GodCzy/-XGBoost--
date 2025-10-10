@@ -1047,6 +1047,14 @@
           renderOptimization(optimization);
           renderMonitor(monitor);
 
+          const metrics = await fetchJSON("/metrics");
+          renderSummary(metadata.report, metrics);
+          renderMetrics(metrics);
+
+          const insights = await fetchJSON("/feature-insights");
+          renderPermutation(insights.permutation_importance);
+          renderShap(insights.shap_summary);
+
           showToast("仪表盘数据已更新", "success");
         } catch (error) {
           document.getElementById("prediction-result").innerHTML =
