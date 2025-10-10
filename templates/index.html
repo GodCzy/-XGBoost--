@@ -608,6 +608,10 @@
         trainMode: "path",
       };
 
+      const predictButton = document.querySelector(
+        "#predict-form button[type='submit']",
+      );
+
       const strategyDisplayNames = {
         mean: "均值融合",
         equal: "等权融合",
@@ -623,6 +627,30 @@
 
       function sanitizeId(value) {
         return value.replace(/[^a-zA-Z0-9-_]/g, "-");
+      }
+
+      function renderError(id, message) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = `<p class="muted">${message}</p>`;
+        }
+      }
+
+      function formatError(reason) {
+        if (!reason) {
+          return "未知错误";
+        }
+        if (reason instanceof Error && reason.message) {
+          return reason.message;
+        }
+        if (typeof reason === "string") {
+          return reason;
+        }
+        try {
+          return JSON.stringify(reason);
+        } catch (error) {
+          return "未知错误";
+        }
       }
 
       function createTable(headers, rows) {
@@ -735,6 +763,9 @@
 
       function renderDataQuality(report) {
         if (!report) {
+          renderError("dataset-missing", "暂无数据质量报告。");
+          renderError("dataset-features", "暂无特征统计。");
+          renderError("dataset-retained", "暂无保留特征信息。");
           return;
         }
         const missingContainer = document.getElementById("dataset-missing");
@@ -903,17 +934,38 @@
         });
         const select = document.getElementById("strategy-select");
         select.innerHTML = "";
-        strategies.forEach((strategy) => {
+        if (!strategies.length) {
           const option = document.createElement("option");
-          option.value = strategy;
-          option.textContent = strategyDisplayNames[strategy] || strategy;
+          option.value = "";
+          option.disabled = true;
+          option.selected = true;
+          option.textContent = "暂无策略";
           select.appendChild(option);
-        });
+        } else {
+          strategies.forEach((strategy) => {
+            const option = document.createElement("option");
+            option.value = strategy;
+            option.textContent = strategyDisplayNames[strategy] || strategy;
+            select.appendChild(option);
+          });
+        }
+        const shouldEnable = strategies.length > 0 && features.length > 0;
+        select.disabled = !shouldEnable;
+        if (predictButton) {
+          predictButton.disabled = !shouldEnable;
+        }
       }
 
       async function initDashboard() {
         try {
           const metadata = await fetchJSON("/metadata");
+          const [metricsResult, insightsResult, optimizationResult, monitorResult] =
+            await Promise.allSettled([
+              fetchJSON("/metrics"),
+              fetchJSON("/feature-insights"),
+              fetchJSON("/optimization"),
+              fetchJSON("/monitor-sample"),
+            ]);
           state.features = metadata.features || [];
           state.strategies = metadata.strategies || [];
           state.weights = metadata.ensemble_weights || {};
