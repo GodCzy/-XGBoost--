@@ -15,6 +15,7 @@ class Config:
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     models_dir: str = os.getenv("MODELS_DIR", "models")
     dataset_path: str | None = os.getenv("DATASET_PATH")
+    dataset_table: str | None = os.getenv("DATASET_TABLE")
 
     def logging_level(self) -> int:
         return getattr(logging, self.log_level.upper(), logging.INFO)

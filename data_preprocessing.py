@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import sqlite3
-from typing import Dict, List, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -32,6 +33,56 @@ def load_sqlite(db_path: str, table: str) -> pd.DataFrame:
         return pd.read_sql(f"SELECT * FROM {table}", conn)
 
 
+def _normalise_frame(df: pd.DataFrame) -> pd.DataFrame:
+    df = standardize_columns(df)
+    return _coerce_numeric_like_columns(df)
+
+
+def load_dataset(
+    path: str | Path,
+    *,
+    table: str | None = None,
+    **kwargs: Any,
+) -> pd.DataFrame:
+    """Load a dataset from multiple supported formats.
+
+    Parameters
+    ----------
+    path:
+        File path pointing to the dataset. CSV, Excel, JSON, Parquet and SQLite
+        files are currently supported.
+    table:
+        Optional table name when loading from SQLite databases.
+    kwargs:
+        Additional arguments forwarded to the pandas loader.
+    """
+
+    dataset_path = Path(path)
+    if not dataset_path.exists():
+        raise FileNotFoundError(f"Dataset {dataset_path} does not exist")
+
+    suffix = dataset_path.suffix.lower()
+    try:
+        if suffix in {".csv", ".txt"}:
+            frame = pd.read_csv(dataset_path, **kwargs)
+        elif suffix in {".xlsx", ".xls"}:
+            frame = pd.read_excel(dataset_path, **kwargs)
+        elif suffix in {".json"}:
+            frame = pd.read_json(dataset_path, **kwargs)
+        elif suffix in {".parquet"}:
+            frame = pd.read_parquet(dataset_path, **kwargs)
+        elif suffix in {".sqlite", ".db"}:
+            if not table:
+                raise ValueError("A table name is required for SQLite datasets")
+            frame = load_sqlite(str(dataset_path), table)
+        else:
+            raise ValueError(f"Unsupported dataset format: {suffix}")
+    except ImportError as exc:  # pragma: no cover - optional readers
+        raise ValueError(f"Missing dependency for loading {suffix} files") from exc
+
+    return _normalise_frame(frame)
+
+
 def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Rename known domain-specific columns to internal names."""
 
@@ -53,6 +104,28 @@ def _coerce_numeric_like_columns(df: pd.DataFrame) -> pd.DataFrame:
         if numeric.notna().mean() > 0.5:
             df[col] = numeric
     return df
+
+
+def frame_from_records(records: Sequence[Mapping[str, Any]]) -> pd.DataFrame:
+    """Create a dataframe from in-memory records for realtime training."""
+
+    if not isinstance(records, Sequence) or isinstance(records, (str, bytes)):
+        raise ValueError("Records must be provided as a sequence of mappings")
+    materialised: List[Mapping[str, Any]] = list(records)
+    if not materialised:
+        raise ValueError("No training records supplied")
+    frame = pd.DataFrame(materialised)
+    frame = _normalise_frame(frame)
+    if "emission" not in frame.columns:
+        raise ValueError("Training data must include an 'emission' target column")
+    emission = pd.to_numeric(frame["emission"], errors="coerce")
+    if emission.isna().all():
+        raise ValueError("The 'emission' column must contain numeric values")
+    frame["emission"] = emission
+    frame = frame.dropna(subset=["emission"])
+    if frame.empty:
+        raise ValueError("No valid training rows remain after cleaning")
+    return frame
 
 
 def quality_report(df: pd.DataFrame) -> Dict[str, Dict[str, float]]:

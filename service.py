@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
+from threading import RLock
 from typing import Any, Dict, List
 
 import numpy as np
@@ -10,7 +10,13 @@ from flask import Flask, jsonify, render_template, request
 from sklearn.model_selection import train_test_split
 
 from config import Config
-from data_preprocessing import build_feature_frame, clean_data, preprocess
+from data_preprocessing import (
+    build_feature_frame,
+    clean_data,
+    frame_from_records,
+    load_dataset,
+    preprocess,
+)
 from emission_predictor import ModelManager
 from experiment_manager import ExperimentManager
 from monitoring import ProcessMonitor
@@ -34,13 +40,20 @@ app = Flask(__name__)
 
 def _load_training_frame(cfg: Config) -> pd.DataFrame:
     if cfg.dataset_path:
-        dataset_path = Path(cfg.dataset_path)
-        if dataset_path.exists():
-            logger.info("Loading dataset from %s", dataset_path)
-            return pd.read_csv(dataset_path)
-        logger.warning(
-            "Dataset path %s not found. Falling back to synthetic data.", dataset_path
-        )
+        try:
+            logger.info("Loading dataset from %s", cfg.dataset_path)
+            return load_dataset(cfg.dataset_path, table=cfg.dataset_table)
+        except FileNotFoundError:
+            logger.warning(
+                "Dataset path %s not found. Falling back to synthetic data.",
+                cfg.dataset_path,
+            )
+        except ValueError as exc:
+            logger.warning(
+                "Failed to load dataset %s: %s. Falling back to synthetic data.",
+                cfg.dataset_path,
+                exc,
+            )
     logger.info("Generating synthetic training data")
     return generate_synthetic_data()
 
@@ -90,9 +103,9 @@ def _run_experiment(
     }
 
 
-def _prepare_training_context() -> Dict[str, Any]:
+def _prepare_training_context(frame: pd.DataFrame) -> Dict[str, Any]:
     logger.info("Training model for API service")
-    frame = _load_training_frame(config)
+    frame = frame.copy()
     X_scaled, y, scaler, report = preprocess(frame)
     X_train, X_test, y_train, y_test = train_test_split(
         X_scaled, y, test_size=0.2, random_state=42
@@ -198,7 +211,7 @@ def _prepare_training_context() -> Dict[str, Any]:
         logger.exception("Experiment execution failed")
 
     return {
-        "frame": frame,
+        "frame": frame.reset_index(drop=True),
         "X_train": X_train,
         "X_test": X_test,
         "y_train": y_train,
@@ -220,7 +233,58 @@ def _prepare_training_context() -> Dict[str, Any]:
     }
 
 
-TRAINING_CONTEXT = _prepare_training_context()
+def build_training_context(
+    cfg: Config,
+    frame: pd.DataFrame | None = None,
+) -> Dict[str, Any]:
+    source_frame = frame if frame is not None else _load_training_frame(cfg)
+    return _prepare_training_context(source_frame)
+
+
+class TrainingState:
+    """Thread-safe container for the service training context."""
+
+    def __init__(self, cfg: Config):
+        self._cfg = cfg
+        self._lock = RLock()
+        self._context = build_training_context(cfg)
+
+    def context(self) -> Dict[str, Any]:
+        with self._lock:
+            return self._context
+
+    def update(self, frame: pd.DataFrame | None = None) -> Dict[str, Any]:
+        context = build_training_context(self._cfg, frame)
+        with self._lock:
+            self._context = context
+        return context
+
+
+TRAINING_STATE = TrainingState(config)
+
+
+def _training_context() -> Dict[str, Any]:
+    return TRAINING_STATE.context()
+
+
+def _resolve_training_payload(payload: Any) -> pd.DataFrame:
+    if isinstance(payload, dict):
+        if "dataset_path" in payload:
+            table = payload.get("dataset_table") or payload.get("table")
+            return load_dataset(
+                payload["dataset_path"],
+                table=table or config.dataset_table,
+            )
+        records = (
+            payload.get("records")
+            or payload.get("rows")
+            or payload.get("data")
+        )
+        if records is None:
+            raise ValueError("Payload must include records or a dataset path")
+    else:
+        records = payload
+    return frame_from_records(records)
 
 
 # ---------------------------------------------------------------------------
@@ -236,38 +300,41 @@ def index() -> str:
 
 @app.route("/metadata")
 def metadata():
+    context = _training_context()
     return jsonify(
         {
-            "features": TRAINING_CONTEXT["base_features"],
-            "report": TRAINING_CONTEXT["report"],
-            "strategies": TRAINING_CONTEXT["strategies"],
-            "ensemble_weights": TRAINING_CONTEXT["ensemble_weights"],
-            "stacking_weights": TRAINING_CONTEXT.get("stacking_weights", {}),
+            "features": context["base_features"],
+            "report": context["report"],
+            "strategies": context["strategies"],
+            "ensemble_weights": context["ensemble_weights"],
+            "stacking_weights": context.get("stacking_weights", {}),
         }
     )
 
 
 @app.route("/metrics")
 def metrics():
-    return jsonify(TRAINING_CONTEXT["metrics"])
+    return jsonify(_training_context()["metrics"])
 
 
 @app.route("/feature-insights")
 def feature_insights():
+    context = _training_context()
     return jsonify(
         {
-            "permutation_importance": TRAINING_CONTEXT["permutation"],
-            "shap_summary": TRAINING_CONTEXT["shap"],
+            "permutation_importance": context["permutation"],
+            "shap_summary": context["shap"],
         }
     )
 
 
 @app.route("/optimization")
 def optimization():
+    context = _training_context()
     return jsonify(
         {
-            "experiments": TRAINING_CONTEXT["experiments"],
-            "summary": TRAINING_CONTEXT["experiment_summary"],
+            "experiments": context["experiments"],
+            "summary": context["experiment_summary"],
         }
     )
 
@@ -276,7 +343,7 @@ def optimization():
 def monitor_sample():
     return jsonify(
         {
-            "log": TRAINING_CONTEXT["monitor_log"],
+            "log": _training_context()["monitor_log"],
             "threshold": float(config.threshold),
         }
     )
@@ -301,11 +368,12 @@ def predict():
             raise ValueError("No valid input data")
         df = build_feature_frame(df, drop_target=False)
         features = df.drop(columns=["emission"], errors="ignore")
+        context = _training_context()
         features = features.reindex(
-            columns=TRAINING_CONTEXT["scaler"].feature_names_in_, fill_value=0.0
+            columns=context["scaler"].feature_names_in_, fill_value=0.0
         )
-        X_in = TRAINING_CONTEXT["scaler"].transform(features)
-        model: ModelManager = TRAINING_CONTEXT["model"]
+        X_in = context["scaler"].transform(features)
+        model: ModelManager = context["model"]
         if all_strategies:
             preds = {
                 name: model.predict(X_in, strategy=name).tolist()
@@ -333,6 +401,30 @@ def predict():
         return jsonify({"prediction": preds.tolist(), "strategy": strategy})
     except Exception as exc:  # pragma: no cover - runtime safety
         logger.exception("Prediction failed")
+        return jsonify({"error": str(exc)}), 400
+
+
+@app.route("/train", methods=["POST"])
+def train_endpoint():
+    """Retrain the service models with user-provided data."""
+
+    try:
+        payload = request.get_json(force=True, silent=True)
+        if payload is None:
+            raise ValueError("A JSON payload is required for training")
+        frame = _resolve_training_payload(payload)
+        context = TRAINING_STATE.update(frame)
+        return jsonify(
+            {
+                "status": "trained",
+                "rows": int(len(context["frame"])),
+                "features": context["base_features"],
+                "strategies": context["strategies"],
+                "metrics": context["metrics"],
+            }
+        )
+    except Exception as exc:  # pragma: no cover - runtime safety
+        logger.exception("Training update failed")
         return jsonify({"error": str(exc)}), 400
 
 

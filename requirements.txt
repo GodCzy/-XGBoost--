@@ -8,4 +8,5 @@ pytest
 flask
 scipy
 matplotlib
+openpyxl
 
