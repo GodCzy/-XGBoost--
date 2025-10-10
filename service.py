@@ -275,11 +275,7 @@ def _resolve_training_payload(payload: Any) -> pd.DataFrame:
                 payload["dataset_path"],
                 table=table or config.dataset_table,
             )
-        records = (
-            payload.get("records")
-            or payload.get("rows")
-            or payload.get("data")
-        )
+        records = payload.get("records") or payload.get("rows") or payload.get("data")
         if records is None:
             raise ValueError("Payload must include records or a dataset path")
     else:
