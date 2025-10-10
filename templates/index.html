@@ -507,35 +507,6 @@
           </div>
         </section>
 
-        <section class="section-card" id="optimization-section">
-          <div class="section-head">
-            <h2 class="section-title">优化实验</h2>
-            <p class="section-desc">
-              汇总粒子群、贝叶斯与遗传算法的最优结果，评估参数调优效率。
-            </p>
-          </div>
-          <div class="grid-two">
-            <div class="data-card" id="optimization-experiments">
-              <p class="muted">优化实验记录加载中…</p>
-            </div>
-            <div class="data-card" id="optimization-summary">
-              <p class="muted">历史对比加载中…</p>
-            </div>
-          </div>
-        </section>
-
-        <section class="section-card" id="monitor-section">
-          <div class="section-head">
-            <h2 class="section-title">运行监控</h2>
-            <p class="section-desc">
-              查看阈值监控样例及触发的优化动作，评估自适应响应能力。
-            </p>
-          </div>
-          <div class="data-card" id="monitor-log">
-            <p class="muted">监控日志加载中…</p>
-          </div>
-        </section>
-
         <section class="section-card" id="prediction-panel">
           <div class="section-head">
             <h2 class="section-title">在线预测</h2>
@@ -652,10 +623,6 @@
         mlp: "多层感知机",
         gbr: "梯度提升树",
         hgb: "直方图梯度提升",
-        pso: "粒子群优化",
-        bayesian: "贝叶斯优化",
-        bayes: "贝叶斯优化",
-        ga: "遗传算法",
       };
 
       function sanitizeId(value) {
@@ -945,82 +912,6 @@
         container.innerHTML = sections || '<p class="muted">暂无 SHAP 数据。</p>';
       }
 
-      function renderOptimization(data) {
-        const experimentsContainer = document.getElementById(
-          "optimization-experiments",
-        );
-        const summaryContainer = document.getElementById(
-          "optimization-summary",
-        );
-
-        const experiments = data?.experiments ?? [];
-        if (!experiments.length) {
-          experimentsContainer.innerHTML =
-            '<p class="muted">暂无优化实验记录。</p>';
-        } else {
-          const rows = experiments.map((item) => [
-            strategyDisplayNames[item.algorithm] || item.algorithm,
-            Array.isArray(item.best_params)
-              ? item.best_params.map((value) => Number(value).toFixed(2)).join(", ")
-              : item.best_params,
-            Number(item.best_val).toFixed(4),
-          ]);
-          experimentsContainer.innerHTML = `
-            <p class="card-title">最新实验结果</p>
-            ${createTable(["算法", "最优参数", "目标值"], rows)}
-          `;
-        }
-
-        const summary = data?.summary ?? [];
-        if (!summary.length) {
-          summaryContainer.innerHTML =
-            '<p class="muted">暂无历史对比数据。</p>';
-        } else {
-          const rows = summary.map((item) => [
-            strategyDisplayNames[item.algorithm] || item.algorithm,
-            item.best_params,
-            Number(item.best_val ?? item.value ?? item.score ?? 0).toFixed(4),
-            item.iterations ?? "-",
-          ]);
-          summaryContainer.innerHTML = `
-            <p class="card-title">历史表现对比</p>
-            ${createTable(["算法", "最优参数", "最佳值", "迭代数"], rows)}
-          `;
-        }
-      }
-
-      function renderMonitor(data) {
-        const container = document.getElementById("monitor-log");
-        const log = data?.log ?? [];
-        if (!log.length) {
-          container.innerHTML = '<p class="muted">暂无监控记录。</p>';
-          return;
-        }
-        const rows = log.map((item) => [
-          (item.step ?? 0) + 1,
-          item.actual != null ? Number(item.actual).toFixed(2) : "-",
-          item.predicted != null ? Number(item.predicted).toFixed(2) : "-",
-          Array.isArray(item.action)
-            ? item.action.map((value) => Number(value).toFixed(2)).join(", ")
-            : "-",
-          Number(item.value ?? 0).toFixed(3),
-          item.forced ? "是" : "否",
-        ]);
-        container.innerHTML = `
-          <p class="card-title">阈值监控样例 (阈值 ${Number(
-            data?.threshold ?? 0
-          ).toFixed(2)})</p>
-          ${createTable([
-            "步次",
-            "实际排放",
-            "预测排放",
-            "优化动作",
-            "目标值",
-            "人工触发",
-          ], rows)}
-        `;
-      }
-
       function renderFeatureInputs(features, strategies) {
         const container = document.getElementById("feature-inputs");
         container.innerHTML = "";
@@ -1083,55 +974,19 @@
           renderDataQuality(metadata.report);
           renderWeights(state.weights, state.stackingWeights);
 
-          const metrics =
-            metricsResult.status === "fulfilled" ? metricsResult.value : null;
-          if (metrics) {
-            renderSummary(metadata.report, metrics);
-            renderMetrics(metrics);
-          } else {
-            renderSummary(metadata.report, null);
-            renderError(
-              "metrics-table",
-              `指标加载失败：${formatError(metricsResult.reason)}`,
-            );
-          }
+          const metrics = await fetchJSON("/metrics");
+          renderSummary(metadata.report, metrics);
+          renderMetrics(metrics);
 
-          if (insightsResult.status === "fulfilled") {
-            const insights = insightsResult.value;
-            renderPermutation(insights.permutation_importance);
-            renderShap(insights.shap_summary);
-          } else {
-            const message = `特征洞察加载失败：${formatError(
-              insightsResult.reason,
-            )}`;
-            renderError("permutation-importance", message);
-            renderError("shap-importance", message);
-          }
-
-          if (optimizationResult.status === "fulfilled") {
-            renderOptimization(optimizationResult.value);
-          } else {
-            const message = `优化实验加载失败：${formatError(
-              optimizationResult.reason,
-            )}`;
-            renderError("optimization-experiments", message);
-            renderError("optimization-summary", message);
-          }
-
-          if (monitorResult.status === "fulfilled") {
-            renderMonitor(monitorResult.value);
-          } else {
-            renderError(
-              "monitor-log",
-              `监控数据加载失败：${formatError(monitorResult.reason)}`,
-            );
-          }
+          const insights = await fetchJSON("/feature-insights");
+          renderPermutation(insights.permutation_importance);
+          renderShap(insights.shap_summary);
 
           showToast("仪表盘数据已更新", "success");
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
-          renderError("summary-cards", `初始化失败：${message}`);
-          showToast(`初始化失败：${message}`, "error");
+          document.getElementById("prediction-result").innerHTML =
+            `<p class="muted">初始化失败：${error.message}</p>`;
+          showToast(`初始化失败：${error.message}`, "error");
         }
       }
 
