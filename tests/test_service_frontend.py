@@ -50,3 +50,25 @@ def test_optimization_route():
     client = app.test_client()
     optimization = client.get("/optimization").get_json()
     assert "experiments" in optimization
+
+
+def test_train_route_retrains_model():
+    client = app.test_client()
+    payload = [
+        {
+            "electricity": 100 + idx,
+            "gdp": 50 + idx,
+            "coal": 30 + idx,
+            "emission": 80 + idx,
+        }
+        for idx in range(6)
+    ]
+    response = client.post("/train", json=payload)
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["status"] == "trained"
+    assert data["rows"] >= 3
+    predict_resp = client.post("/predict", json=payload[0])
+    assert predict_resp.status_code == 200
+    prediction_payload = predict_resp.get_json()
+    assert "prediction" in prediction_payload or "predictions" in prediction_payload

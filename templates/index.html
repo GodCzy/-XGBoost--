@@ -2,7 +2,11 @@
 <html lang="zh">
   <head>
     <meta charset="UTF-8" />
-    <title>智能排放管控驾驶舱</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>智能排放驾驶舱</title>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/modern-css-reset@1.4.0/dist/reset.min.css"
@@ -15,18 +19,32 @@
     />
     <style>
       :root {
-        --bg-start: #f5f7ff;
-        --bg-end: #f0f9ff;
+        --bg-start: #f7f9ff;
+        --bg-end: #eef4ff;
         --text-strong: #0f172a;
         --text-muted: #64748b;
         --primary: #2563eb;
         --accent: #7c3aed;
-        --card-bg: rgba(255, 255, 255, 0.92);
-        --border: rgba(148, 163, 184, 0.25);
+        --card-bg: rgba(255, 255, 255, 0.94);
+        --border: rgba(148, 163, 184, 0.18);
         --radius-lg: 22px;
         --radius-md: 16px;
-        --shadow-soft: 0 32px 60px rgba(15, 23, 42, 0.12);
-        --shadow-light: 0 18px 38px rgba(37, 99, 235, 0.18);
+        --shadow-soft: 0 30px 60px rgba(15, 23, 42, 0.15);
+        --shadow-light: 0 20px 40px rgba(37, 99, 235, 0.18);
+        --success: #10b981;
+        --danger: #ef4444;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-start: #0f172a;
+          --bg-end: #1f2937;
+          --card-bg: rgba(17, 24, 39, 0.92);
+          --text-strong: #f8fafc;
+          --text-muted: #cbd5f5;
+          --border: rgba(148, 163, 184, 0.26);
+          --shadow-soft: 0 26px 60px rgba(0, 0, 0, 0.45);
+        }
       }
 
       *,
@@ -38,68 +56,134 @@
       body {
         font-family: "Manrope", "Segoe UI", Arial, sans-serif;
         color: var(--text-strong);
-        line-height: 1.65;
+        line-height: 1.6;
         min-height: 100vh;
-        position: relative;
-        background: var(--bg-end);
+        margin: 0;
+        background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
         -webkit-font-smoothing: antialiased;
       }
 
-      body::before {
-        content: "";
+      .bg-fx {
         position: fixed;
         inset: 0;
         z-index: -2;
+        pointer-events: none;
         background:
-          radial-gradient(circle at 12% 18%, rgba(124, 58, 237, 0.16), transparent 55%),
-          radial-gradient(circle at 82% 12%, rgba(37, 99, 235, 0.15), transparent 60%),
-          linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
-      }
-
-      body::after {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        background:
-          radial-gradient(circle at 50% 92%, rgba(15, 23, 42, 0.08), transparent 60%);
-        opacity: 0.9;
-      }
-
-      .container {
-        max-width: 1180px;
-        margin: 48px auto 72px;
-        padding: 0 28px 80px;
-        display: flex;
-        flex-direction: column;
-        gap: 28px;
+          radial-gradient(circle at 12% 18%, rgba(124, 58, 237, 0.18), transparent 55%),
+          radial-gradient(circle at 80% 10%, rgba(37, 99, 235, 0.16), transparent 60%),
+          radial-gradient(circle at 50% 95%, rgba(15, 23, 42, 0.08), transparent 70%);
       }
 
       header {
-        text-align: center;
+        padding: clamp(36px, 6vw, 72px) clamp(18px, 6vw, 64px) 28px;
         display: grid;
-        gap: 18px;
-        margin-bottom: 10px;
+        gap: 28px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(20px);
+        background: linear-gradient(180deg, rgba(247, 249, 255, 0.95), transparent);
       }
 
-      header h1 {
-        font-size: clamp(2.2rem, 2.4vw, 2.9rem);
-        font-weight: 700;
-        letter-spacing: 0.12em;
+      @media (prefers-color-scheme: dark) {
+        header {
+          background: linear-gradient(180deg, rgba(15, 23, 42, 0.94), transparent);
+        }
+      }
+
+      .hero {
+        display: grid;
+        gap: 16px;
+        max-width: 980px;
+      }
+
+      .hero__eyebrow {
+        letter-spacing: 0.32em;
         text-transform: uppercase;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--primary);
       }
 
-      header p {
-        font-size: 1.05rem;
-        color: var(--text-muted);
-        max-width: 820px;
-        justify-self: center;
+      .hero__title {
+        margin: 0;
+        font-size: clamp(2.4rem, 3vw, 3.6rem);
+        font-weight: 700;
+        line-height: 1.08;
       }
 
-      .section-lead {
+      .hero__lead {
+        font-size: clamp(1rem, 1.2vw, 1.22rem);
         color: var(--text-muted);
-        margin-bottom: 18px;
-        font-size: 0.98rem;
+        max-width: 720px;
+      }
+
+      .hero__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 22px;
+        border-radius: 999px;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: #fff;
+        box-shadow: var(--shadow-light);
+      }
+
+      .btn-ghost {
+        background: rgba(37, 99, 235, 0.14);
+        color: var(--primary);
+        border: 1px solid rgba(37, 99, 235, 0.32);
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .nav-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+
+      .nav-bar a {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.16);
+        color: inherit;
+        text-decoration: none;
+        font-size: 0.92rem;
+        transition: background 0.2s ease, color 0.2s ease;
+      }
+
+      .nav-bar a.active,
+      .nav-bar a:hover {
+        background: rgba(37, 99, 235, 0.2);
+        color: var(--primary);
+      }
+
+      main {
+        display: grid;
+        gap: 32px;
+        padding: 0 clamp(18px, 6vw, 64px) 88px;
       }
 
       .panel {
@@ -107,8 +191,7 @@
         border-radius: var(--radius-lg);
         border: 1px solid var(--border);
         box-shadow: var(--shadow-soft);
-        padding: 32px;
-        backdrop-filter: blur(18px);
+        padding: clamp(24px, 4vw, 36px);
         position: relative;
         overflow: hidden;
       }
@@ -116,30 +199,31 @@
       .panel::before {
         content: "";
         position: absolute;
-        top: -60px;
-        right: -80px;
+        inset: -120px auto auto -120px;
         width: 220px;
         height: 220px;
         background: radial-gradient(
           circle,
-          rgba(37, 99, 235, 0.16) 0%,
-          rgba(124, 58, 237, 0.05) 55%,
-          transparent 80%
+          rgba(37, 99, 235, 0.18) 0%,
+          rgba(124, 58, 237, 0.08) 60%,
+          transparent 72%
         );
-        transform: rotate(12deg);
+        opacity: 0.7;
       }
 
-      .panel > *:first-child {
+      .panel__header {
         position: relative;
         z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 16px;
       }
 
-      .panel h2 {
-        font-size: 1.45rem;
-        margin-bottom: 14px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
+      .panel__title {
+        margin: 0;
+        font-size: clamp(1.32rem, 1.8vw, 1.7rem);
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
@@ -153,18 +237,66 @@
         padding: 6px 14px;
         font-size: 0.82rem;
         color: var(--primary);
-        text-transform: none;
+        font-weight: 600;
       }
 
-      form {
+      .section-lead {
+        position: relative;
+        z-index: 1;
+        color: var(--text-muted);
+        margin-bottom: 18px;
+        font-size: 0.98rem;
+        max-width: 860px;
+      }
+
+      .summary-grid {
+        position: relative;
+        z-index: 1;
         display: grid;
-        gap: 20px;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .summary-card {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 99, 235, 0.16),
+          rgba(124, 58, 237, 0.12)
+        );
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(37, 99, 235, 0.25);
+        padding: 18px 20px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .summary-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(15, 23, 42, 0.72);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .summary-label {
+          color: rgba(226, 232, 240, 0.8);
+        }
+      }
+
+      .summary-value {
+        font-size: 1.7rem;
+        font-weight: 700;
+      }
+
+      .summary-hint {
+        color: var(--text-muted);
+        font-size: 0.88rem;
       }
 
       .feature-grid {
         display: grid;
         gap: 14px;
-        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       }
 
       .feature-grid label {
@@ -173,20 +305,22 @@
         gap: 6px;
         font-size: 0.88rem;
         color: var(--text-muted);
-        padding: 12px 14px;
-        border-radius: var(--radius-md);
-        border: 1px solid rgba(148, 163, 184, 0.28);
-        background: rgba(248, 250, 252, 0.6);
+      }
+
+      input,
+      select,
+      textarea {
+        font-family: inherit;
       }
 
       .feature-grid input {
         padding: 10px 12px;
-        border: 1px solid rgba(148, 163, 184, 0.4);
-        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 12px;
         font-size: 1rem;
-        transition: border 0.2s ease, box-shadow 0.2s ease;
+        background: rgba(248, 250, 252, 0.96);
         color: var(--text-strong);
-        background: #fff;
+        transition: border 0.2s ease, box-shadow 0.2s ease;
       }
 
       .feature-grid input:focus {
@@ -198,41 +332,18 @@
       .control-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 14px;
+        gap: 12px;
         align-items: center;
+        margin-top: 12px;
       }
 
-      select,
-      button {
+      select {
         padding: 12px 18px;
         border-radius: 12px;
-        border: 1px solid rgba(148, 163, 184, 0.5);
+        border: 1px solid rgba(148, 163, 184, 0.4);
         font-size: 1rem;
-        background: #fff;
+        background: rgba(248, 250, 252, 0.96);
         color: var(--text-strong);
-      }
-
-      button {
-        background: linear-gradient(135deg, var(--primary), var(--accent));
-        color: #fff;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        box-shadow: var(--shadow-light);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-
-      button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 22px 32px rgba(37, 99, 235, 0.22);
-      }
-
-      code {
-        font-family: "Fira Code", "Consolas", monospace;
-        background: rgba(15, 23, 42, 0.06);
-        padding: 2px 6px;
-        border-radius: 6px;
-        font-size: 0.85rem;
       }
 
       .toggle {
@@ -248,162 +359,34 @@
         height: 18px;
       }
 
-      .result {
-        margin-top: 12px;
-        font-size: 0.98rem;
-        color: var(--text-strong);
-      }
-
       .grid-two {
         display: grid;
-        gap: 20px;
+        gap: 18px;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       }
 
-      .muted {
-        color: var(--text-muted);
-        font-size: 0.9rem;
-      }
-
-      .error {
-        color: #dc2626;
-        margin-top: 10px;
-      }
-
-      .capability-grid,
-      .strategy-grid,
-      .model-grid {
-        display: grid;
-        gap: 20px;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      }
-
-      .capability-card,
-      .strategy-card,
-      .model-card {
-        padding: 22px;
-        border-radius: var(--radius-md);
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), #ffffff 100%);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
-      }
-
-      .capability-card h3,
-      .strategy-card h3,
-      .model-card h3 {
-        font-size: 1.1rem;
-        margin-bottom: 10px;
-      }
-
-      .capability-card p,
-      .strategy-card p,
-      .model-card p {
-        color: var(--text-muted);
-        line-height: 1.6;
-        margin-bottom: 12px;
-      }
-
-      .capability-card ul,
-      .model-card ul {
-        margin: 0;
-        padding-left: 18px;
-        color: var(--text-strong);
-        line-height: 1.5;
-      }
-
-      .strategy-meta {
-        color: var(--primary);
-        font-size: 0.9rem;
-        font-weight: 600;
-      }
-
-      .workflow {
-        display: grid;
-        gap: 18px;
-      }
-
-      .workflow-step {
-        border-left: 3px solid rgba(37, 99, 235, 0.35);
-        padding-left: 16px;
-      }
-
-      .workflow-step h3 {
-        font-size: 1.05rem;
-        margin-bottom: 6px;
-      }
-
-      .workflow-step span {
-        display: inline-block;
-        background: rgba(37, 99, 235, 0.12);
-        color: var(--primary);
-        font-size: 0.82rem;
-        font-weight: 700;
-        padding: 4px 12px;
-        border-radius: 999px;
-        margin-bottom: 6px;
-        letter-spacing: 0.08em;
-      }
-
-      .workflow-step p {
-        color: var(--text-muted);
-        line-height: 1.6;
-      }
-
-      .stat-grid {
-        display: grid;
-        gap: 16px;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        margin-bottom: 12px;
-      }
-
-      .stat-card {
-        background: linear-gradient(
-          135deg,
-          rgba(37, 99, 235, 0.12),
-          rgba(124, 58, 237, 0.08)
-        );
-        border-radius: var(--radius-md);
-        border: 1px solid rgba(37, 99, 235, 0.25);
-        padding: 18px 20px;
-        display: grid;
-        gap: 6px;
-      }
-
-      .stat-label {
-        font-size: 0.78rem;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.14em;
-      }
-
-      .stat-value {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--text-strong);
-      }
-
-      .stat-hint {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-      }
-
-      .data-card {
-        background: rgba(255, 255, 255, 0.65);
-        border: 1px solid rgba(148, 163, 184, 0.25);
+      .data-card,
+      .highlight-card,
+      .sub-card {
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.22);
         border-radius: var(--radius-md);
         padding: 18px 20px;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
       }
 
-      .data-card + .data-card {
-        margin-top: 0;
+      @media (prefers-color-scheme: dark) {
+        .data-card,
+        .highlight-card,
+        .sub-card {
+          background: rgba(17, 24, 39, 0.8);
+          box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.22);
+        }
       }
 
-      caption {
-        text-align: left;
-        margin-bottom: 10px;
+      .card-title {
         font-weight: 600;
-        color: var(--text-strong);
+        margin-bottom: 12px;
         letter-spacing: 0.04em;
       }
 
@@ -415,11 +398,11 @@
 
       .data-table thead th {
         background: rgba(37, 99, 235, 0.08);
-        color: var(--text-strong);
-        font-weight: 600;
         padding: 10px 14px;
         text-align: left;
-        border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+        font-weight: 600;
+        color: var(--text-strong);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.28);
       }
 
       .data-table tbody td {
@@ -428,260 +411,267 @@
       }
 
       .data-table tbody tr:nth-child(even) {
-        background: rgba(15, 23, 42, 0.03);
+        background: rgba(37, 99, 235, 0.05);
       }
 
-      .data-table tbody tr:last-child td {
-        border-bottom: none;
-      }
-
-      .tag-cloud {
-        margin-top: 22px;
+      .strategy-grid,
+      .model-grid {
         display: grid;
-        gap: 12px;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       }
 
-      .tag-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-muted);
-      }
-
-      .tag-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-      }
-
-      .tag {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.06);
-        color: var(--text-strong);
-        font-size: 0.85rem;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-      }
-
-      .card-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--text-strong);
-        margin-bottom: 12px;
-      }
-
-      .sub-card {
-        background: rgba(255, 255, 255, 0.8);
-        border: 1px solid rgba(148, 163, 184, 0.25);
+      .strategy-card,
+      .model-card {
+        padding: 22px;
         border-radius: var(--radius-md);
-        padding: 16px 18px;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        margin-bottom: 16px;
-      }
-
-      .card-separator {
-        height: 1px;
-        margin: 16px 0;
-        background: rgba(148, 163, 184, 0.28);
-      }
-
-      .highlight-card {
-        padding: 20px;
-        border-radius: var(--radius-md);
-        border: 1px solid rgba(226, 232, 240, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.24);
         background: linear-gradient(
-          120deg,
-          rgba(248, 250, 252, 0.85),
-          rgba(255, 255, 255, 0.72)
+          180deg,
+          rgba(248, 250, 252, 0.92),
+          rgba(255, 255, 255, 0.9)
         );
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
       }
 
-      .status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(37, 99, 235, 0.12);
+      @media (prefers-color-scheme: dark) {
+        .strategy-card,
+        .model-card {
+          background: linear-gradient(
+            180deg,
+            rgba(30, 41, 59, 0.9),
+            rgba(17, 24, 39, 0.92)
+          );
+        }
+      }
+
+      .strategy-card p,
+      .model-card p {
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+
+      .strategy-meta {
         color: var(--primary);
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         font-weight: 600;
       }
 
-      .result .highlight-card {
-        margin-top: 10px;
+      .tag-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
       }
 
-      @media (max-width: 720px) {
-        .container {
-          padding: 0 18px 60px;
+      .tag {
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--primary);
+        font-size: 0.88rem;
+      }
+
+      .muted {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+
+      .result {
+        margin-top: 16px;
+        font-size: 0.98rem;
+      }
+
+      .error {
+        color: var(--danger);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 32px;
+        right: 24px;
+        min-width: 240px;
+        padding: 14px 18px;
+        border-radius: 16px;
+        background: rgba(37, 99, 235, 0.95);
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 24px 45px rgba(15, 23, 42, 0.28);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(16px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+
+      .toast.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .train-form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .train-form textarea {
+        min-height: 140px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.34);
+        font-family: "Fira Code", "Consolas", monospace;
+        background: rgba(248, 250, 252, 0.96);
+        color: var(--text-strong);
+        resize: vertical;
+      }
+
+      .train-form textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
+
+      .train-switch {
+        display: inline-flex;
+        gap: 10px;
+        background: rgba(148, 163, 184, 0.18);
+        padding: 6px;
+        border-radius: 999px;
+        margin-bottom: 12px;
+      }
+
+      .train-switch button {
+        border: none;
+        border-radius: 999px;
+        padding: 8px 18px;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s ease, color 0.2s ease;
+      }
+
+      .train-switch button.active {
+        background: rgba(37, 99, 235, 0.22);
+        color: var(--primary);
+      }
+
+      .train-hint {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      footer {
+        text-align: center;
+        padding: 24px;
+        color: var(--text-muted);
+        font-size: 0.84rem;
+      }
+
+      @media (max-width: 768px) {
+        header {
+          padding-top: 44px;
         }
 
-        .panel {
-          padding: 24px;
+        main {
+          padding-bottom: 72px;
         }
 
-        header h1 {
-          letter-spacing: 0.08em;
+        .nav-bar {
+          gap: 8px;
         }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>智能排放管控驾驶舱</h1>
-        <p>
-          一站式洞察数据质量、模型表现、特征影响与优化策略，实时掌握排放风险，先人一步做出高阶决策。
+    <div class="bg-fx"></div>
+    <header>
+      <div class="hero">
+        <span class="hero__eyebrow">Unified Emission Intelligence</span>
+        <h1 class="hero__title">智能排放管控驾驶舱</h1>
+        <p class="hero__lead">
+          数据质量、建模策略与优化节奏一屏洞察。支持实时预测与在线重训，
+          帮助团队先人一步掌握排放风险。
         </p>
-      </header>
-
-      <section class="panel" id="capability-panel">
-        <h2>
-          平台能力全景
-          <span class="badge">数据 · 建模 · 优化 · 运维 一体化</span>
-        </h2>
-        <div class="capability-grid">
-          <article class="capability-card">
-            <h3>数据智能引擎</h3>
-            <p>
-              基于 <code>data_preprocessing.py</code> 的自动化流水线，确保不同来源的原始数据在分钟级完成治理。
-            </p>
-            <ul>
-              <li>CSV / SQLite 多源导入与中文字段智能映射。</li>
-              <li>缺失值填补、异常值剔除、数值化与标准化全流程。</li>
-              <li>构建平方项、比值、对数等领域特征并自动消除共线性。</li>
-            </ul>
-          </article>
-          <article class="capability-card">
-            <h3>模型融合引擎</h3>
-            <p>
-              <code>ModelManager</code> 同时管理五大回归器，并提供多种策略以满足不同业务场景的精度与稳定性需求。
-            </p>
-            <ul>
-              <li>mean / equal / residual / self_adaption / stacking 多策略一键切换。</li>
-              <li>输出 R²、MAPE、MAE、RMSE 全量评估指标与不确定性区间。</li>
-              <li>支持 SHAP 与 permutation importance 深入解释特征贡献。</li>
-            </ul>
-          </article>
-          <article class="capability-card">
-            <h3>优化决策大脑</h3>
-            <p>
-              <code>optimization.py</code> 与 <code>ExperimentManager</code> 组成的智能实验平台，为排放控制策略提供实时迭代能力。
-            </p>
-            <ul>
-              <li>内置 PSO、贝叶斯、遗传算法多策略对 <code>emission_objective</code> 迭代寻优。</li>
-              <li>实验日志、最优参数与目标值完整留痕，便于对比复盘。</li>
-              <li>ProcessMonitor 异常触发自动调优，阈值策略可通过 Config 自定义。</li>
-            </ul>
-          </article>
-          <article class="capability-card">
-            <h3>工程化运维保障</h3>
-            <p>
-              自带 API、模型版本化与测试脚本，帮助团队快速落地并持续交付。
-            </p>
-            <ul>
-              <li>Flask 服务暴露 /predict、/metadata 等接口即插即用。</li>
-              <li>模型工件通过 Joblib 版本化持久化，方便部署回滚。</li>
-              <li><code>main.py</code> 与 <code>tests/</code> 提供离线验证与冒烟测试保障。</li>
-            </ul>
-          </article>
+        <div class="hero__actions">
+          <button class="btn btn-primary" data-scroll-target="prediction-panel">
+            立即预测
+          </button>
+          <button class="btn btn-ghost" data-scroll-target="train-panel">
+            在线重训
+          </button>
         </div>
-      </section>
-
-      <section class="panel" id="workflow-panel">
-        <h2>
-          闭环工作流
-          <span class="badge">从数据到决策的每一步都可追溯</span>
-        </h2>
-        <div class="workflow">
-          <div class="workflow-step">
-            <span>Step 01</span>
-            <h3>数据导入与治理</h3>
-            <p>
-              <code>load_training_frame</code> 自动识别外部数据源，配合清洗、字段映射与缺失值处理，生成高质量原始数据集。
-            </p>
-          </div>
-          <div class="workflow-step">
-            <span>Step 02</span>
-            <h3>特征构建与筛选</h3>
-            <p>
-              通过比值、平方、对数等特征工程与共线性消除策略，形成可用于建模的稳健特征矩阵与质量报告。
-            </p>
-          </div>
-          <div class="workflow-step">
-            <span>Step 03</span>
-            <h3>多模型集成训练</h3>
-            <p>
-              <code>ModelManager</code> 统一训练随机森林、XGBoost、MLP 等模型，并自动计算集成权重与元学习 Stacking 模型。
-            </p>
-          </div>
-          <div class="workflow-step">
-            <span>Step 04</span>
-            <h3>智能优化与监控</h3>
-            <p>
-              ExperimentManager 运行多策略实验，ProcessMonitor 实时监听并触发 PSO / GA / 贝叶斯调优，形成动态阈值控制。
-            </p>
-          </div>
-          <div class="workflow-step">
-            <span>Step 05</span>
-            <h3>可视化与服务化交付</h3>
-            <p>
-              Flask API 与本驾驶舱页面提供在线预测、指标监控、特征洞察，帮助业务快速验证与部署减排策略。
-            </p>
+      </div>
+      <nav class="nav-bar" id="section-nav">
+        <a href="#summary-panel" data-target="summary-panel" class="active">总览</a>
+        <a href="#strategy-panel" data-target="strategy-panel">策略矩阵</a>
+        <a href="#model-panel" data-target="model-panel">模型家族</a>
+        <a href="#prediction-panel" data-target="prediction-panel">在线预测</a>
+        <a href="#dataset-panel" data-target="dataset-panel">数据洞察</a>
+        <a href="#metrics-panel" data-target="metrics-panel">评估指标</a>
+        <a href="#insights-panel" data-target="insights-panel">特征影响</a>
+        <a href="#optimization-panel" data-target="optimization-panel">优化实验</a>
+        <a href="#monitor-panel" data-target="monitor-panel">过程监控</a>
+        <a href="#train-panel" data-target="train-panel">在线训练</a>
+      </nav>
+    </header>
+    <main>
+      <section class="panel" id="summary-panel">
+        <div class="panel__header">
+          <h2 class="panel__title">运行概览</h2>
+          <span class="badge">数据 · 模型 · 优化实时联动</span>
+        </div>
+        <p class="section-lead">
+          快速了解当前训练数据规模、特征构成与模型表现，为业务协同提供
+          统一基线。
+        </p>
+        <div class="summary-grid" id="summary-cards">
+          <div class="summary-card">
+            <span class="summary-label">加载中</span>
+            <span class="summary-value">···</span>
+            <span class="summary-hint">请稍候</span>
           </div>
         </div>
+        <p class="train-hint" id="summary-updated">最后更新：初始化中…</p>
       </section>
 
       <section class="panel" id="strategy-panel">
-        <h2>
-          集成策略地图
-          <span class="badge">自适应融合与单模直推一览</span>
-        </h2>
-        <p class="section-lead">
-          策略描述与权重来自后端实时同步，可帮助快速理解不同组合在当前数据下的决策特点。
-        </p>
-        <div id="strategy-overview">
-          <p class="muted">策略信息加载中…</p>
+        <div class="panel__header">
+          <h2 class="panel__title">集成策略地图</h2>
+          <span class="badge">融合与单模优劣一目了然</span>
         </div>
+        <p class="section-lead">
+          策略描述与权重实时同步，帮助理解不同组合的适用场景与贡献。
+        </p>
+        <div id="strategy-overview"><p class="muted">加载中…</p></div>
       </section>
 
       <section class="panel" id="model-panel">
-        <h2>
-          模型家族能力
+        <div class="panel__header">
+          <h2 class="panel__title">模型家族能力</h2>
           <span class="badge">基础模型优势速览</span>
-        </h2>
-        <p class="section-lead">
-          所有基础模型均由 <code>ModelManager</code> 统一训练与调度，以下亮点帮助快速匹配业务场景。
-        </p>
-        <div id="model-hub">
-          <p class="muted">模型详情加载中…</p>
         </div>
+        <p class="section-lead">
+          基础模型由 ModelManager 统一训练调度，亮点便于匹配业务场景。
+        </p>
+        <div id="model-hub"><p class="muted">加载中…</p></div>
       </section>
 
       <section class="panel" id="prediction-panel">
-        <h2>
-          在线预测
-          <span class="badge">支持策略组合 &amp; 不确定性量化</span>
-        </h2>
+        <div class="panel__header">
+          <h2 class="panel__title">在线预测</h2>
+          <span class="badge">策略组合与不确定性量化</span>
+        </div>
         <form id="predict-form">
           <div class="feature-grid" id="feature-inputs"></div>
           <div class="control-row">
             <label>
-              组合策略
+              <span class="muted">组合策略</span>
               <select id="strategy-select"></select>
             </label>
             <label class="toggle">
-              <input type="checkbox" id="uncertainty-toggle" />
-              展示预测区间
+              <input type="checkbox" id="uncertainty-toggle" />展示预测区间
             </label>
-            <button type="submit">生成预测</button>
+            <button class="btn btn-primary" type="submit">生成预测</button>
           </div>
         </form>
         <div class="result" id="prediction-result"></div>
@@ -690,39 +680,39 @@
       </section>
 
       <section class="panel" id="dataset-panel">
-        <h2>
-          数据概览
+        <div class="panel__header">
+          <h2 class="panel__title">数据洞察</h2>
           <span class="badge">自动特征工程与质量扫描</span>
-        </h2>
+        </div>
         <p class="section-lead">
-          自动梳理数据质量、特征保留情况与集成权重，为后续建模提供清晰的事实基础。
+          梳理数据质量、特征保留情况与集成权重，为后续建模提供事实依据。
         </p>
-        <div class="stat-grid" id="dataset-stats"></div>
+        <div class="summary-grid" id="dataset-stats"></div>
         <div class="grid-two">
           <div id="dataset-report" class="data-card"></div>
           <div id="feature-summary" class="data-card"></div>
         </div>
-        <div class="grid-two" style="margin-top: 20px;">
+        <div class="grid-two" style="margin-top: 18px;">
           <div id="ensemble-weights" class="data-card"></div>
           <div id="stacking-weights" class="data-card"></div>
         </div>
-        <div id="retained-features" class="data-card tag-cloud"></div>
+        <div id="retained-features" class="data-card" style="margin-top: 18px;"></div>
         <div id="correlation-alerts" style="margin-top: 18px;"></div>
       </section>
 
       <section class="panel" id="metrics-panel">
-        <h2>
-          模型评估指标
+        <div class="panel__header">
+          <h2 class="panel__title">模型评估指标</h2>
           <span class="badge">全栈集成学习</span>
-        </h2>
+        </div>
         <div id="metrics-table" class="data-card"></div>
       </section>
 
       <section class="panel" id="insights-panel">
-        <h2>
-          特征影响分析
+        <div class="panel__header">
+          <h2 class="panel__title">特征影响分析</h2>
           <span class="badge">SHAP &amp; 置换重要性</span>
-        </h2>
+        </div>
         <div class="grid-two">
           <div id="permutation-importance" class="data-card"></div>
           <div id="shap-importance" class="data-card"></div>
@@ -730,150 +720,201 @@
       </section>
 
       <section class="panel" id="optimization-panel">
-        <h2>
-          优化算法表现
-          <span class="badge">多策略博弈</span>
-        </h2>
+        <div class="panel__header">
+          <h2 class="panel__title">优化算法表现</h2>
+          <span class="badge">多策略协同寻优</span>
+        </div>
         <div id="optimization-results" class="data-card"></div>
       </section>
 
       <section class="panel" id="monitor-panel">
-        <h2>
-          过程监控示例
+        <div class="panel__header">
+          <h2 class="panel__title">过程监控示例</h2>
           <span class="badge">动态阈值自适应</span>
-        </h2>
+        </div>
         <div class="highlight-card" id="monitor-threshold"></div>
         <div id="monitor-log" class="data-card"></div>
       </section>
-    </div>
 
+      <section class="panel" id="train-panel">
+        <div class="panel__header">
+          <h2 class="panel__title">在线训练中心</h2>
+          <span class="badge">分钟级刷新模型上下文</span>
+        </div>
+        <p class="section-lead">
+          通过文件路径或直接输入记录触发重训，成功后全局板块即时同步最
+          新指标。
+        </p>
+        <div class="train-switch" role="tablist">
+          <button
+            type="button"
+            class="active"
+            data-train-mode="path"
+            aria-selected="true"
+          >
+            使用数据集路径
+          </button>
+          <button type="button" data-train-mode="json" aria-selected="false">
+            输入实时记录
+          </button>
+        </div>
+        <form id="train-form" class="train-form">
+          <label id="dataset-path-field">
+            <span class="muted">数据集路径</span>
+            <input
+              type="text"
+              id="dataset-path-input"
+              placeholder="例如：/data/emission_latest.csv"
+              style="padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.34); background: rgba(248, 250, 252, 0.96);"
+            />
+          </label>
+          <label id="dataset-table-field" style="display: none;">
+            <span class="muted">数据表名称（SQLite 可选）</span>
+            <input
+              type="text"
+              id="dataset-table-input"
+              placeholder="默认使用配置值"
+              style="padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.34); background: rgba(248, 250, 252, 0.96);"
+            />
+          </label>
+          <label id="record-json-field" style="display: none;">
+            <span class="muted">JSON 记录数组</span>
+            <textarea
+              id="record-json-input"
+              placeholder='例如：[{"emission": 520, "temperature": 320, ...}]'
+            ></textarea>
+          </label>
+          <div class="control-row">
+            <button class="btn btn-primary" type="submit">提交重训</button>
+            <button class="btn btn-ghost" type="button" id="train-fill-sample">
+              填充示例
+            </button>
+            <span class="train-hint" id="train-status">等待提交…</span>
+          </div>
+        </form>
+      </section>
+    </main>
+    <footer>© 智能排放驾驶舱 · 实时监测 · 自适应优化</footer>
+    <div class="toast" id="toast"></div>
     <script>
       const state = {
         features: [],
         strategies: [],
         weights: {},
         stackingWeights: {},
+        lastUpdated: null,
+        trainMode: "path",
       };
 
       const strategyDisplayNames = {
-        mean: '鲁棒平均 (mean)',
-        equal: '等权融合 (equal)',
-        residual: '残差反向加权 (residual)',
-        self_adaption: '验证集自适应 (self_adaption)',
-        stacking: '元学习集成 (stacking)',
-        rf: '随机森林 (rf)',
-        xgb: 'XGBoost (xgb)',
-        mlp: '多层感知器 (mlp)',
-        gbr: '梯度提升回归 (gbr)',
-        hgb: '直方图梯度提升 (hgb)',
+        mean: "鲁棒平均 (mean)",
+        equal: "等权融合 (equal)",
+        residual: "残差反向加权 (residual)",
+        self_adaption: "验证集自适应 (self_adaption)",
+        stacking: "元学习 stacking",
+        rf: "随机森林",
+        xgb: "XGBoost",
+        mlp: "多层感知机",
+        svr: "支持向量回归",
+        ridge: "岭回归",
       };
 
       const strategyDescriptions = {
-        mean: '对所有基础模型输出求平均，提供稳健基线表现。',
-        equal:
-          'XGBoost 与随机森林固定等权融合，适合作为快速上线的集成策略。',
-        residual:
-          '根据残差动态分配 XGBoost / RF 权重，让误差更小的模型贡献更大。',
-        self_adaption:
-          '在验证集上搜索最佳权重，实现对当前数据分布的自适应融合。',
-        stacking:
-          '以 RidgeCV 作为元学习器堆叠全部基础模型，兼顾精度与泛化能力。',
-        rf: '基于袋装的树模型，擅长处理噪声与高维离散特征。',
-        xgb: '梯度提升树高效建模非线性关系，是解释与精度的平衡选择。',
-        mlp: '64×32 隐藏层的多层感知器，补充神经网络对复杂关系的表达力。',
-        gbr:
-          '传统梯度提升回归器，逐步逼近残差，为集成提供稳定基线。',
-        hgb:
-          '直方图梯度提升回归器，训练高效，适合大规模数据的快速建模。',
+        mean: "对基础模型做鲁棒平均，整体误差最低。",
+        equal: "各模型等权组合，适合快速上线。",
+        residual: "残差倒数加权，强化表现更稳的模型。",
+        self_adaption: "根据验证集表现自动选择策略。",
+        stacking: "以二层学习器融合所有基础模型。",
       };
 
       const baseModelDetails = {
         rf: {
-          title: '随机森林（RandomForestRegressor）',
-          description: '通过袋装思想降低方差，对噪声与异常点具备出色鲁棒性。',
-          strengths: [
-            '自动子采样特征，配合 out-of-bag 机制缓解过拟合风险。',
-            '与置换重要性结合，能给出稳定可信的特征排序。',
-          ],
+          title: "随机森林 (RF)",
+          description: "抗噪声强，适合异常点较多的场景。",
+          strengths: ["天然处理非线性", "特征重要性清晰", "无需复杂调参"],
         },
         xgb: {
-          title: 'XGBoost 回归（XGBRegressor）',
-          description: '梯度提升框架，支持正则化与列采样，兼具速度与精度。',
-          strengths: [
-            '提供 SHAP 值，量化每个特征对排放预测的边际影响。',
-            '在多种融合策略中担纲主力模型，提升整体预测上限。',
-          ],
+          title: "XGBoost",
+          description: "梯度提升框架，擅长刻画复杂非线性关系。",
+          strengths: ["收敛快", "支持特征交互", "泛化能力强"],
         },
         mlp: {
-          title: '多层感知器（MLPRegressor）',
-          description: '两层全连接网络 (64→32)，捕捉更复杂的非线性结构。',
-          strengths: [
-            '补充树模型难以覆盖的平滑连续关系，提升模型多样性。',
-            '在 Stacking 中提供神经网络视角，丰富集成表达能力。',
-          ],
+          title: "多层感知机",
+          description: "适合高维连续特征，捕获潜在模式。",
+          strengths: ["表达复杂关系", "可叠加 Dropout", "适合在线微调"],
         },
-        gbr: {
-          title: '梯度提升回归（GradientBoostingRegressor）',
-          description: '传统 boosting 基线，逐步拟合残差以提升精度。',
-          strengths: [
-            '训练稳定、可解释性良好，适合做策略回溯与对比。',
-            '为堆叠模型提供稳健的中等复杂度预测信号。',
-          ],
+        svr: {
+          title: "支持向量回归",
+          description: "在小样本高维场景下具备稳定表现。",
+          strengths: ["对异常值不敏感", "核函数扩展灵活", "对特征缩放敏感"],
         },
-        hgb: {
-          title: '直方图梯度提升（HistGradientBoostingRegressor）',
-          description: '基于直方图加速的 boosting，实现更快的迭代效率。',
-          strengths: [
-            '对大数据量依然保持快速训练，支撑高频策略试验。',
-            '离散化直方图天然具备正则效果，提升泛化表现。',
-          ],
+        ridge: {
+          title: "岭回归",
+          description: "线性模型基准，提供稳健参考。",
+          strengths: ["训练快速", "可解释性强", "对共线性有鲁棒性"],
         },
       };
 
-      function sanitizeId(name) {
-        return name.replace(/[^a-zA-Z0-9_-]/g, '-');
+      function sanitizeId(value) {
+        return value.replace(/[^a-zA-Z0-9-_]/g, "-");
       }
 
       function createTable(headers, rows) {
         if (!rows.length) {
           return '<p class="muted">暂无数据</p>';
         }
-        const thead =
-          `<thead><tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr></thead>`;
-        const tbody =
-          `<tbody>${rows
-            .map((row) =>
-              `<tr>${row.map((cell) => `<td>${cell}</td>`).join('')}</tr>`,
-            )
-            .join('')}</tbody>`;
+        const thead = `<thead><tr>${headers
+          .map((h) => `<th>${h}</th>`)
+          .join("")}</tr></thead>`;
+        const tbody = `<tbody>${rows
+          .map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join("")}</tr>`)
+          .join("")}</tbody>`;
         return `<table class="data-table">${thead}${tbody}</table>`;
       }
 
       function formatWeightPair(weight) {
         if (!weight) {
-          return '';
+          return "";
         }
         return Object.entries(weight)
-          .map(
-            ([name, value]) => `${name.toUpperCase()} ${(value * 100).toFixed(1)}%`,
-          )
-          .join(' · ');
+          .map(([name, value]) => `${name.toUpperCase()} ${(value * 100).toFixed(1)}%`)
+          .join(" · ");
       }
 
       function formatStackingWeights(weights) {
         if (!weights) {
-          return '';
+          return "";
         }
         return Object.entries(weights)
           .sort(([, a], [, b]) => b - a)
-          .map(
-            ([name, value]) => `${name.toUpperCase()} ${(value * 100).toFixed(1)}%`,
-          )
-          .join(' · ');
+          .map(([name, value]) => `${name.toUpperCase()} ${(value * 100).toFixed(1)}%`)
+          .join(" · ");
+      }
+
+      function showToast(message, type = "info") {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.style.background =
+          type === "success"
+            ? "rgba(16, 185, 129, 0.95)"
+            : type === "error"
+            ? "rgba(239, 68, 68, 0.95)"
+            : "rgba(37, 99, 235, 0.95)";
+        toast.classList.add("visible");
+        setTimeout(() => toast.classList.remove("visible"), 3200);
+      }
+
+      async function fetchJSON(url, options) {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`请求失败: ${response.status} ${text}`);
+        }
+        return response.json();
       }
 
       function renderStrategyMap(strategies, weights, stackingWeights) {
-        const container = document.getElementById('strategy-overview');
+        const container = document.getElementById("strategy-overview");
         if (!container) {
           return;
         }
@@ -889,15 +930,15 @@
         ];
         const cards = ordered.map((name) => {
           const title = strategyDisplayNames[name] || name.toUpperCase();
-          const description = strategyDescriptions[name] || '融合策略。';
+          const description = strategyDescriptions[name] || "融合策略。";
           const detailLines = [];
           if (weights && weights[name]) {
             detailLines.push(`融合权重：${formatWeightPair(weights[name])}`);
           }
-          if (name === 'stacking') {
-            const stackingText = formatStackingWeights(stackingWeights);
-            if (stackingText) {
-              detailLines.push(`Stacking 权重：${stackingText}`);
+          if (name === "stacking") {
+            const stackText = formatStackingWeights(stackingWeights);
+            if (stackText) {
+              detailLines.push(`Stacking 权重：${stackText}`);
             }
           }
           if (stackingWeights && stackingWeights[name] != null && baseKeys.includes(name)) {
@@ -906,15 +947,15 @@
             );
           }
           const detail = detailLines.length
-            ? `<p class="strategy-meta">${detailLines.join('<br />')}</p>`
-            : '';
+            ? `<p class="strategy-meta">${detailLines.join("<br />")}</p>`
+            : "";
           return `<article class="strategy-card"><h3>${title}</h3><p>${description}</p>${detail}</article>`;
         });
-        container.innerHTML = `<div class="strategy-grid">${cards.join('')}</div>`;
+        container.innerHTML = `<div class="strategy-grid">${cards.join("")}</div>`;
       }
 
       function renderModelHub(strategies, stackingWeights = {}) {
-        const container = document.getElementById('model-hub');
+        const container = document.getElementById("model-hub");
         if (!container) {
           return;
         }
@@ -926,16 +967,14 @@
         }
         const cards = base.map((name) => {
           const detail = baseModelDetails[name];
-          const items = detail.strengths
-            .map((item) => `<li>${item}</li>`)
-            .join('');
+          const items = detail.strengths.map((item) => `<li>${item}</li>`).join("");
           const stackingShare = stackingWeights[name];
           const stackingInfo =
             stackingShare != null
               ? `<p class="strategy-meta">Stacking 权重贡献：${(
                   stackingShare * 100
                 ).toFixed(1)}%</p>`
-              : '';
+              : "";
           return [
             `<article class="model-card">`,
             `<h3>${detail.title}</h3>`,
@@ -943,128 +982,123 @@
             `<ul>${items}</ul>`,
             stackingInfo,
             `</article>`,
-          ].join('');
+          ].join("");
         });
-        container.innerHTML = `<div class="model-grid">${cards.join('')}</div>`;
+        container.innerHTML = `<div class="model-grid">${cards.join("")}</div>`;
       }
 
-      async function fetchJSON(url) {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`请求失败: ${response.status}`);
+      function renderSummary(report, metrics) {
+        if (!report) {
+          return;
         }
-        return response.json();
-      }
-
-      function renderFeatureInputs(features, strategies) {
-        const container = document.getElementById('feature-inputs');
-        container.innerHTML = '';
-        features.forEach((feature) => {
-          const id = `feature-${sanitizeId(feature)}`;
-          const wrapper = document.createElement('label');
-          wrapper.textContent = feature;
-          const input = document.createElement('input');
-          input.type = 'number';
-          input.step = 'any';
-          input.id = id;
-          input.required = true;
-          input.placeholder = '请输入数值';
-          input.dataset.feature = feature;
-          wrapper.appendChild(input);
-          container.appendChild(wrapper);
-        });
-        const select = document.getElementById('strategy-select');
-        select.innerHTML = '';
-        strategies.forEach((strategy) => {
-          const option = document.createElement('option');
-          option.value = strategy;
-          option.textContent = strategyDisplayNames[strategy] || strategy;
-          select.appendChild(option);
-        });
+        const retained = report.retained_features || [];
+        const sampleCount = report.n_rows ?? 0;
+        const engineered = Math.max(retained.length - (state.features?.length || 0), 0);
+        const missingValues = Object.values(report.missing_rate || {});
+        const avgMissing =
+          missingValues.length > 0
+            ? missingValues.reduce((acc, value) => acc + Number(value || 0), 0) /
+              missingValues.length
+            : 0;
+        const qualityScore = Math.max(0, 100 - avgMissing * 100);
+        const bestEntry = (() => {
+          if (!metrics) {
+            return { label: "-", value: "-" };
+          }
+          const entries = [
+            ...Object.entries(metrics.base_models || {}),
+            ...Object.entries(metrics.ensembles || {}),
+          ];
+          if (!entries.length) {
+            return { label: "-", value: "-" };
+          }
+          const [name, data] = entries.sort(([, a], [, b]) => b.r2 - a.r2)[0];
+          return {
+            label: name,
+            value: `${Number(data.r2 || 0).toFixed(3)} R²`,
+          };
+        })();
+        const stats = [
+          {
+            label: "清洗后样本",
+            value: new Intl.NumberFormat("zh-CN").format(Math.round(sampleCount)),
+            hint: "用于训练与验证的记录数",
+          },
+          {
+            label: "建模特征",
+            value: new Intl.NumberFormat("zh-CN").format(retained.length),
+            hint: engineered > 0 ? `含派生特征 ${engineered} 项` : "以业务关键字段为主",
+          },
+          {
+            label: "数据稳定度",
+            value: `${qualityScore.toFixed(1)}%`,
+            hint:
+              (report.high_correlation_pairs || []).length > 0
+                ? `高相关特征对 ${(report.high_correlation_pairs || []).length} 组`
+                : "已自动消除高共线性干扰",
+          },
+          {
+            label: "最佳模型",
+            value: bestEntry.value,
+            hint: `当前策略：${bestEntry.label}`,
+          },
+        ];
+        const container = document.getElementById("summary-cards");
+        container.innerHTML = stats
+          .map(
+            (item) => `
+              <article class="summary-card">
+                <span class="summary-label">${item.label}</span>
+                <span class="summary-value">${item.value}</span>
+                <span class="summary-hint">${item.hint}</span>
+              </article>
+            `,
+          )
+          .join("");
+        state.lastUpdated = new Date();
+        document.getElementById("summary-updated").textContent =
+          `最后更新：${state.lastUpdated.toLocaleString("zh-CN")}`;
       }
 
       function renderReport(report, weights, stackingWeights) {
         if (!report) {
           return;
         }
-        const formatInteger = (value) => {
-          const num = Number(value);
-          if (!Number.isFinite(num)) {
-            return '-';
-          }
-          return new Intl.NumberFormat('zh-CN').format(Math.round(num));
-        };
-
-        const statsContainer = document.getElementById('dataset-stats');
+        const statsContainer = document.getElementById("dataset-stats");
         if (statsContainer) {
-          const retainedFeatures = report.retained_features || [];
-          const sampleCount = report.n_rows ?? 0;
-          const engineeredCount = Math.max(
-            retainedFeatures.length - (state.features?.length || 0),
-            0,
-          );
-          const missingValues = Object.values(report.missing_rate || {});
-          const avgMissing =
-            missingValues.length > 0
-              ? missingValues.reduce(
-                  (acc, value) => acc + Number(value || 0),
-                  0,
-                ) / missingValues.length
-              : 0;
-          const qualityScore = Math.max(0, 100 - avgMissing * 100);
-          const highCorrCount = (report.high_correlation_pairs || []).length;
-          const stats = [
-            {
-              label: '清洗后样本',
-              value: formatInteger(sampleCount),
-              hint: '用于训练与验证的记录数',
-            },
-            {
-              label: '建模特征',
-              value: formatInteger(retainedFeatures.length),
-              hint:
-                engineeredCount > 0
-                  ? `含派生特征 ${formatInteger(engineeredCount)} 项`
-                  : '以业务关键字段为主',
-            },
-            {
-              label: '数据稳定度',
-              value: `${qualityScore.toFixed(1)}%`,
-              hint:
-                highCorrCount > 0
-                  ? `高相关特征对：${formatInteger(highCorrCount)} 组`
-                  : '已自动消除高共线性干扰',
-            },
-          ];
-          statsContainer.innerHTML = stats
-            .map(
-              (item) => `
-                <div class="stat-card">
-                  <span class="stat-label">${item.label}</span>
-                  <span class="stat-value">${item.value}</span>
-                  <span class="stat-hint">${item.hint}</span>
-                </div>
-              `,
-            )
-            .join('');
+          statsContainer.innerHTML = document.getElementById("summary-cards").innerHTML;
         }
-
-        const reportDiv = document.getElementById('dataset-report');
+        const reportDiv = document.getElementById("dataset-report");
         if (reportDiv) {
           const rows = Object.entries(report.missing_rate || {})
             .sort(([, a], [, b]) => Number(b) - Number(a))
-            .map(([feature, value]) => [
-              feature,
-              `${(Number(value) * 100).toFixed(2)}%`,
-            ])
+            .map(([feature, value]) => [feature, `${(Number(value) * 100).toFixed(2)}%`])
             .slice(0, 12);
           reportDiv.innerHTML = `
             <p class="card-title">字段缺失率（Top12）</p>
-            ${createTable(['特征', '缺失率'], rows)}
+            ${createTable(["特征", "缺失率"], rows)}
           `;
         }
-
-        const weightDiv = document.getElementById('ensemble-weights');
+        const featureDiv = document.getElementById("feature-summary");
+        if (featureDiv) {
+          const retained = report.retained_features || [];
+          const dropped = report.dropped_features || [];
+          const retainedTags = retained
+            .slice(0, 28)
+            .map((name) => `<span class="tag">${name}</span>`)
+            .join("");
+          const droppedRows = dropped.map((item) => [item.feature, item.reason || "-"]);
+          featureDiv.innerHTML = `
+            <p class="card-title">特征保留情况</p>
+            <div class="tag-cloud">
+              ${retainedTags || '<span class="muted">暂无特征展示。</span>'}
+            </div>
+            <div style="height: 1px; margin: 16px 0; background: rgba(148,163,184,0.18);"></div>
+            <p class="card-title">被剔除字段</p>
+            ${createTable(["特征", "原因"], droppedRows)}
+          `;
+        }
+        const weightDiv = document.getElementById("ensemble-weights");
         if (weightDiv) {
           const weightRows = Object.entries(weights || {}).map(([name, pair]) => [
             strategyDisplayNames[name] || name,
@@ -1073,87 +1107,57 @@
           ]);
           weightDiv.innerHTML = `
             <p class="card-title">双模型组合权重</p>
-            ${createTable(['策略', 'XGB 权重', 'RF 权重'], weightRows)}
+            ${createTable(["策略", "XGB 权重", "RF 权重"], weightRows)}
           `;
         }
-
-        const stackingDiv = document.getElementById('stacking-weights');
+        const stackingDiv = document.getElementById("stacking-weights");
         if (stackingDiv) {
           const stackRows = Object.entries(stackingWeights || {})
             .sort(([, a], [, b]) => Number(b) - Number(a))
-            .map(([name, value]) => [
-              strategyDisplayNames[name] || name.toUpperCase(),
-              `${(value * 100).toFixed(1)}%`,
-            ]);
+            .map(([name, value]) => [name.toUpperCase(), `${(value * 100).toFixed(1)}%`]);
           stackingDiv.innerHTML = `
-            <p class="card-title">Stacking 元学习权重</p>
-            ${createTable(['基础模型', '权重贡献'], stackRows)}
+            <p class="card-title">Stacking 权重分布</p>
+            ${createTable(["模型", "贡献度"], stackRows)}
           `;
         }
-
-        const summaryDiv = document.getElementById('feature-summary');
-        if (summaryDiv) {
-          const summaryEntries = Object.entries(report.feature_summary || {})
-            .slice(0, 8)
-            .map(([feature, stats]) => [
-              feature,
-              Number(stats.mean).toFixed(2),
-              Number(stats.std).toFixed(2),
-              Number(stats.min).toFixed(2),
-              Number(stats.max).toFixed(2),
-            ]);
-          summaryDiv.innerHTML = `
-            <p class="card-title">特征统计摘要（前 8 项）</p>
-            ${createTable(['特征', '均值', '标准差', '最小值', '最大值'], summaryEntries)}
-          `;
-        }
-
-        const retainedDiv = document.getElementById('retained-features');
+        const retainedDiv = document.getElementById("retained-features");
         if (retainedDiv) {
-          const retained = report.retained_features || [];
-          if (retained.length) {
-            const limit = 24;
-            const visible = retained.slice(0, limit);
-            const hiddenCount = Math.max(retained.length - visible.length, 0);
-            retainedDiv.innerHTML = `
-              <span class="card-title">最终建模特征 (${retained.length})</span>
-              <div class="tag-list">
-                ${visible.map((name) => `<span class="tag">${name}</span>`).join('')}
-              </div>
-              ${
-                hiddenCount
-                  ? `<p class="muted">其余 ${hiddenCount} 项已折叠，可在后端配置中查看完整列表。</p>`
-                  : ''
-              }
-            `;
-          } else {
-            retainedDiv.innerHTML = '<p class="muted">暂无特征信息。</p>';
-          }
-        }
-
-        const correlationDiv = document.getElementById('correlation-alerts');
-        if (correlationDiv) {
-          const correlationRows = (report.high_correlation_pairs || [])
-            .slice(0, 6)
-            .map((item) => [
-              item.feature_a,
-              item.feature_b,
-              Number(item.correlation).toFixed(3),
-            ]);
-          correlationDiv.innerHTML = `
-            <div class="highlight-card">
-              <p class="card-title">高相关特征预警</p>
-              ${createTable(['特征 A', '特征 B', '相关系数'], correlationRows)}
-              <p class="muted">若相关性过高，将自动进行特征降维处理。</p>
+          const pairs = report.high_correlation_pairs || [];
+          retainedDiv.innerHTML = `
+            <p class="card-title">保留特征 Top${Math.min(24, retained.length)}</p>
+            <div class="tag-cloud">
+              ${retained
+                .slice(0, 24)
+                .map((item) => `<span class="tag">${item}</span>`)
+                .join("")}
             </div>
           `;
+          const corrDiv = document.getElementById("correlation-alerts");
+          if (corrDiv) {
+            corrDiv.innerHTML = pairs.length
+              ? `
+                  <div class="highlight-card">
+                    <strong>高相关预警：</strong>
+                    ${pairs
+                      .slice(0, 6)
+                      .map(
+                        (item) =>
+                          `${item.feature_a} ↔ ${item.feature_b} (corr ${(Number(
+                            item.correlation,
+                          ) * 100).toFixed(1)}%)`,
+                      )
+                      .join("； ")}
+                  </div>
+                `
+              : '<p class="muted">暂无高相关特征对。</p>';
+          }
         }
       }
 
       function renderMetrics(metrics) {
-        const container = document.getElementById('metrics-table');
+        const container = document.getElementById("metrics-table");
         if (!metrics) {
-          container.innerHTML = '<p class="muted">暂无指标信息。</p>';
+          container.innerHTML = '<p class="muted">暂无指标。</p>';
           return;
         }
         const rows = [];
@@ -1175,54 +1179,48 @@
             values.rmse.toFixed(3),
           ]);
         });
-        container.innerHTML = createTable(
-          ['模型', 'R²', 'MAPE', 'MAE', 'RMSE'],
-          rows,
-        );
+        container.innerHTML = `
+          <p class="card-title">核心指标</p>
+          ${createTable(["模型", "R²", "MAPE", "MAE", "RMSE"], rows)}
+        `;
       }
 
       function renderPermutation(data) {
-        const container = document.getElementById('permutation-importance');
+        const container = document.getElementById("permutation-importance");
         if (!data || !data.length) {
           container.innerHTML = '<p class="muted">暂未生成置换重要性。</p>';
           return;
         }
-        const rows = data.map((item) => [
-          item.feature,
-          item.importance.toFixed(4),
-        ]);
+        const rows = data.map((item) => [item.feature, item.importance.toFixed(4)]);
         container.innerHTML = `
           <p class="card-title">置换重要性（随机森林）</p>
-          ${createTable(['特征', '重要性'], rows)}
+          ${createTable(["特征", "重要性"], rows)}
         `;
       }
 
       function renderShap(shap) {
-        const container = document.getElementById('shap-importance');
+        const container = document.getElementById("shap-importance");
         if (!shap) {
           container.innerHTML = '<p class="muted">SHAP 分析不可用。</p>';
           return;
         }
         const sections = Object.entries(shap)
           .map(([name, values]) => {
-            const rows = values.map((item) => [
-              item.feature,
-              item.importance.toFixed(4),
-            ]);
+            const rows = values.map((item) => [item.feature, item.importance.toFixed(4)]);
             const label = strategyDisplayNames[name] || name.toUpperCase();
             return `
               <div class="sub-card">
                 <p class="card-title">${label} 平均 |SHAP|</p>
-                ${createTable(['特征', '影响力'], rows)}
+                ${createTable(["特征", "影响力"], rows)}
               </div>
             `;
           })
-          .join('');
+          .join("");
         container.innerHTML = sections;
       }
 
       function renderOptimization(data) {
-        const container = document.getElementById('optimization-results');
+        const container = document.getElementById("optimization-results");
         if (!data) {
           container.innerHTML = '<p class="muted">暂无优化结果。</p>';
           return;
@@ -1230,9 +1228,7 @@
         const { experiments = [], summary = [] } = data;
         const experimentRows = experiments.map((item) => [
           item.algorithm,
-          `[${(item.best_params || [])
-            .map((value) => value.toFixed(2))
-            .join(', ')}]`,
+          `[${(item.best_params || []).map((value) => value.toFixed(2)).join(", ")}]`,
           item.best_val.toFixed(3),
         ]);
         const summaryRows = summary.map((item) => [
@@ -1243,20 +1239,20 @@
         ]);
         container.innerHTML = `
           <p class="card-title">最新实验最佳结果</p>
-          ${createTable(['算法', '最佳参数', '目标值'], experimentRows)}
-          <div class="card-separator"></div>
+          ${createTable(["算法", "最佳参数", "目标值"], experimentRows)}
+          <div style="margin: 16px 0; height: 1px; background: rgba(148,163,184,0.18);"></div>
           <p class="card-title">实验日志概览</p>
-          ${createTable(['算法', '最佳参数', '目标值', '迭代数'], summaryRows)}
+          ${createTable(["算法", "最佳参数", "目标值", "迭代数"], summaryRows)}
         `;
       }
 
       function renderMonitor(log) {
-        const container = document.getElementById('monitor-log');
-        const thresholdCard = document.getElementById('monitor-threshold');
+        const container = document.getElementById("monitor-log");
+        const thresholdCard = document.getElementById("monitor-threshold");
         if (thresholdCard) {
-          if (log && typeof log.threshold === 'number') {
+          if (log && typeof log.threshold === "number") {
             thresholdCard.innerHTML = `
-              <div class="status-pill">报警阈值 ${log.threshold.toFixed(2)}</div>
+              <div class="strategy-meta">报警阈值 ${log.threshold.toFixed(2)}</div>
               <p class="muted">超过阈值即触发多策略协同优化。</p>
             `;
           } else {
@@ -1269,145 +1265,297 @@
         }
         const rows = log.log.map((item) => [
           item.step,
-          item.actual !== null ? item.actual.toFixed(2) : '-',
-          item.predicted !== null ? item.predicted.toFixed(2) : '-',
+          item.actual !== null ? item.actual.toFixed(2) : "-",
+          item.predicted !== null ? item.predicted.toFixed(2) : "-",
           item.action
-            ? `[${item.action.map((value) => value.toFixed(2)).join(', ')}]`
-            : '无',
+            ? `[${item.action.map((value) => value.toFixed(2)).join(", ")}]`
+            : "无",
           item.value.toFixed(2),
-          item.forced
-            ? '强制调优'
-            : item.action
-            ? '自动调优'
-            : '常规监控',
+          item.forced ? "强制调优" : item.action ? "自动调优" : "常规监控",
         ]);
         container.innerHTML = `
           <p class="card-title">监控日志</p>
           ${createTable(
-            ['步骤', '实际值', '预测值', '优化动作', '目标函数', '状态'],
+            ["步骤", "实际值", "预测值", "优化动作", "目标函数", "状态"],
             rows,
           )}
         `;
       }
+      function renderFeatureInputs(features, strategies) {
+        const container = document.getElementById("feature-inputs");
+        container.innerHTML = "";
+        features.forEach((feature) => {
+          const id = `feature-${sanitizeId(feature)}`;
+          const wrapper = document.createElement("label");
+          wrapper.textContent = feature;
+          const input = document.createElement("input");
+          input.type = "number";
+          input.step = "any";
+          input.id = id;
+          input.required = true;
+          input.placeholder = "请输入数值";
+          input.dataset.feature = feature;
+          wrapper.appendChild(input);
+          container.appendChild(wrapper);
+        });
+        const select = document.getElementById("strategy-select");
+        select.innerHTML = "";
+        strategies.forEach((strategy) => {
+          const option = document.createElement("option");
+          option.value = strategy;
+          option.textContent = strategyDisplayNames[strategy] || strategy;
+          select.appendChild(option);
+        });
+      }
 
       async function initDashboard() {
         try {
-          const metadata = await fetchJSON('/metadata');
+          const metadata = await fetchJSON("/metadata");
           state.features = metadata.features || [];
           state.strategies = metadata.strategies || [];
           state.weights = metadata.ensemble_weights || {};
           state.stackingWeights = metadata.stacking_weights || {};
           renderFeatureInputs(state.features, state.strategies);
-          renderStrategyMap(
-            state.strategies,
-            state.weights,
-            state.stackingWeights,
-          );
+          renderStrategyMap(state.strategies, state.weights, state.stackingWeights);
           renderModelHub(state.strategies, state.stackingWeights);
-          renderReport(
-            metadata.report,
-            state.weights,
-            state.stackingWeights,
-          );
-          const metrics = await fetchJSON('/metrics');
+          renderReport(metadata.report, state.weights, state.stackingWeights);
+          const metrics = await fetchJSON("/metrics");
+          renderSummary(metadata.report, metrics);
           renderMetrics(metrics);
-          const insights = await fetchJSON('/feature-insights');
+          const insights = await fetchJSON("/feature-insights");
           renderPermutation(insights.permutation_importance);
           renderShap(insights.shap_summary);
-          const optimization = await fetchJSON('/optimization');
+          const optimization = await fetchJSON("/optimization");
           renderOptimization(optimization);
-          const monitor = await fetchJSON('/monitor-sample');
+          const monitor = await fetchJSON("/monitor-sample");
           renderMonitor(monitor);
+          showToast("仪表盘数据已更新", "success");
         } catch (error) {
-          document.getElementById('prediction-result').innerHTML =
+          document.getElementById("prediction-result").innerHTML =
             `<p class="error">初始化失败：${error.message}</p>`;
+          showToast(`初始化失败：${error.message}`, "error");
         }
       }
 
       async function handlePredict(event) {
         event.preventDefault();
-        const inputs = Array.from(
-          document.querySelectorAll('#feature-inputs input'),
-        );
+        const inputs = Array.from(document.querySelectorAll("#feature-inputs input"));
         const payload = {};
         for (const input of inputs) {
           const value = input.value;
-          if (value === '') {
+          if (value === "") {
             input.focus();
+            showToast("请输入完整特征值后再预测", "error");
             return;
           }
           payload[input.dataset.feature] = Number(value);
         }
-        const strategy = document.getElementById('strategy-select').value;
-        const includeUncertainty = document.getElementById('uncertainty-toggle').checked;
+        const strategy = document.getElementById("strategy-select").value;
+        const includeUncertainty = document.getElementById("uncertainty-toggle").checked;
         try {
-          const response = await fetch(
+          const data = await fetchJSON(
             `/predict?strategy=${encodeURIComponent(strategy)}&all_strategies=true&uncertainty=${includeUncertainty}`,
             {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             },
           );
-          const data = await response.json();
-          const uncertaintyDiv = document.getElementById('uncertainty-result');
-          uncertaintyDiv.innerHTML = '';
-          if (response.ok && data.predictions) {
-            document.getElementById('prediction-result').textContent =
-              '预测已生成，详见下表。';
-            const rows = Object.entries(data.predictions).map(
-              ([name, values]) => [
-                name,
-                values.map((value) => Number(value).toFixed(2)).join(', '),
-              ],
-            );
-            document.getElementById('prediction-table').innerHTML = createTable(
-              ['策略', '预测值'],
+          const uncertaintyDiv = document.getElementById("uncertainty-result");
+          uncertaintyDiv.innerHTML = "";
+          if (data.predictions) {
+            document.getElementById("prediction-result").textContent = "预测已生成，详见下表。";
+            const rows = Object.entries(data.predictions).map(([name, values]) => [
+              strategyDisplayNames[name] || name,
+              values.map((value) => Number(value).toFixed(2)).join(", "),
+            ]);
+            document.getElementById("prediction-table").innerHTML = createTable(
+              ["策略", "预测值"],
               rows,
             );
             if (data.uncertainty) {
               const lower = data.uncertainty.lower.map((value) => Number(value).toFixed(2));
               const upper = data.uncertainty.upper.map((value) => Number(value).toFixed(2));
               const center = data.uncertainty.prediction.map((value) => Number(value).toFixed(2));
-              uncertaintyDiv.innerHTML =
-                `<div class="highlight-card">` +
-                `<strong>区间 (${data.uncertainty.strategy}):</strong> ` +
-                center
-                  .map((value, idx) => `${value} [${lower[idx]}, ${upper[idx]}]`)
-                  .join('， ') +
-                '</div>';
+              uncertaintyDiv.innerHTML = `
+                <div class="highlight-card">
+                  <strong>区间 (${strategyDisplayNames[data.uncertainty.strategy] || data.uncertainty.strategy}):</strong>
+                  ${center
+                    .map((value, idx) => `${value} [${lower[idx]}, ${upper[idx]}]`)
+                    .join("， ")}
+                </div>
+              `;
             }
-          } else if (response.ok && data.prediction) {
-            document.getElementById('prediction-result').textContent =
-              `预测结果 (${data.strategy}): ${data.prediction
+          } else if (data.prediction) {
+            document.getElementById("prediction-result").textContent =
+              `预测结果 (${strategyDisplayNames[data.strategy] || data.strategy}): ${data.prediction
                 .map((value) => Number(value).toFixed(2))
-                .join(', ')}`;
-            document.getElementById('prediction-table').innerHTML = '';
+                .join(", ")}`;
+            document.getElementById("prediction-table").innerHTML = "";
             if (data.lower && data.upper) {
               const intervalText = data.lower
                 .map((value, idx) =>
-                  `${Number(data.prediction[idx]).toFixed(2)} ` +
-                  `[${Number(value).toFixed(2)}, ${Number(data.upper[idx]).toFixed(2)}]`,
+                  `${Number(data.prediction[idx]).toFixed(2)} [${Number(value).toFixed(2)}, ${Number(
+                    data.upper[idx],
+                  ).toFixed(2)}]`,
                 )
-                .join('， ');
-              uncertaintyDiv.innerHTML =
-                `<div class="highlight-card">预测区间：${intervalText}</div>`;
+                .join("， ");
+              uncertaintyDiv.innerHTML = `<div class="highlight-card">预测区间：${intervalText}</div>`;
             }
           } else {
-            throw new Error(data.error || '未知错误');
+            throw new Error(data.error || "未知错误");
           }
+          showToast("预测成功", "success");
         } catch (error) {
-          document.getElementById('prediction-result').innerHTML =
+          document.getElementById("prediction-result").innerHTML =
             `<p class="error">预测失败：${error.message}</p>`;
-          document.getElementById('prediction-table').innerHTML = '';
-          document.getElementById('uncertainty-result').innerHTML = '';
+          document.getElementById("prediction-table").innerHTML = "";
+          document.getElementById("uncertainty-result").innerHTML = "";
+          showToast(`预测失败：${error.message}`, "error");
         }
       }
 
-      document
-        .getElementById('predict-form')
-        .addEventListener('submit', handlePredict);
-      document.addEventListener('DOMContentLoaded', initDashboard);
+      function handleTrainModeChange(mode) {
+        state.trainMode = mode;
+        document
+          .querySelectorAll('.train-switch button')
+          .forEach((btn) => {
+            const isActive = btn.dataset.trainMode === mode;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', String(isActive));
+          });
+        document.getElementById('dataset-path-field').style.display =
+          mode === 'path' ? 'block' : 'none';
+        document.getElementById('dataset-table-field').style.display =
+          mode === 'path' ? 'block' : 'none';
+        document.getElementById('record-json-field').style.display =
+          mode === 'json' ? 'block' : 'none';
+        document.getElementById('train-status').textContent = '等待提交…';
+      }
+
+      function buildTrainPayload() {
+        if (state.trainMode === 'path') {
+          const path = document.getElementById('dataset-path-input').value.trim();
+          const table = document.getElementById('dataset-table-input').value.trim();
+          if (!path) {
+            throw new Error('请提供数据集路径');
+          }
+          const payload = { dataset_path: path };
+          if (table) {
+            payload.dataset_table = table;
+          }
+          return payload;
+        }
+        const raw = document.getElementById('record-json-input').value.trim();
+        if (!raw) {
+          throw new Error('请粘贴至少一条 JSON 记录');
+        }
+        try {
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed) || !parsed.length) {
+            throw new Error('JSON 必须为包含记录的数组');
+          }
+          return { records: parsed };
+        } catch (error) {
+          throw new Error(`JSON 解析失败：${error.message}`);
+        }
+      }
+
+      function fillTrainSample() {
+        if (state.trainMode === 'path') {
+          document.getElementById('dataset-path-input').value = '/data/emission_demo.csv';
+          document.getElementById('dataset-table-input').value = '';
+        } else {
+          const sample = [
+            {
+              emission: 520,
+              temperature: 320,
+              pressure: 2.4,
+              humidity: 42,
+              flow_rate: 860,
+            },
+            {
+              emission: 498,
+              temperature: 318,
+              pressure: 2.2,
+              humidity: 45,
+              flow_rate: 845,
+            },
+          ];
+          document.getElementById('record-json-input').value = JSON.stringify(sample, null, 2);
+        }
+        document.getElementById('train-status').textContent = '已填充示例，可直接提交';
+      }
+
+      async function handleTrain(event) {
+        event.preventDefault();
+        const status = document.getElementById('train-status');
+        try {
+          const payload = buildTrainPayload();
+          status.textContent = '正在提交重训任务…';
+          const result = await fetchJSON('/train', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          status.textContent = `训练完成，样本数 ${result.rows}`;
+          showToast('训练完成，正在刷新仪表盘', 'success');
+          await initDashboard();
+        } catch (error) {
+          status.textContent = `训练失败：${error.message}`;
+          showToast(`训练失败：${error.message}`, 'error');
+        }
+      }
+
+      function setupNavScroll() {
+        document.querySelectorAll('[data-scroll-target]').forEach((button) => {
+          button.addEventListener('click', () => {
+            const targetId = button.dataset.scrollTarget;
+            const target = document.getElementById(targetId);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
+        });
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                document
+                  .querySelectorAll('.nav-bar a')
+                  .forEach((link) => link.classList.toggle(
+                    'active',
+                    link.dataset.target === entry.target.id,
+                  ));
+              }
+            });
+          },
+          { threshold: 0.3 },
+        );
+        document
+          .querySelectorAll('main > section')
+          .forEach((section) => observer.observe(section));
+        document.querySelectorAll('.nav-bar a').forEach((link) => {
+          link.addEventListener('click', (event) => {
+            event.preventDefault();
+            const target = document.getElementById(link.dataset.target);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
+        });
+      }
+
+      document.getElementById('predict-form').addEventListener('submit', handlePredict);
+      document.getElementById('train-form').addEventListener('submit', handleTrain);
+      document.getElementById('train-fill-sample').addEventListener('click', fillTrainSample);
+      document.querySelectorAll('.train-switch button').forEach((button) => {
+        button.addEventListener('click', () => handleTrainModeChange(button.dataset.trainMode));
+      });
+      document.addEventListener('DOMContentLoaded', () => {
+        setupNavScroll();
+        initDashboard();
+      });
     </script>
   </body>
 </html>
