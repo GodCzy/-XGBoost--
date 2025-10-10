@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from config import Config
-from data_preprocessing import preprocess
+from data_preprocessing import load_dataset, preprocess
 from emission_predictor import ModelManager
 from experiment_manager import ExperimentManager
 from monitoring import ProcessMonitor
@@ -48,14 +47,24 @@ def emission_objective(params):
 def load_training_frame(config: Config) -> pd.DataFrame:
     """Return dataframe for training based on configuration."""
 
+    logger = logging.getLogger(__name__)
     if config.dataset_path:
-        dataset_path = Path(config.dataset_path)
-        if dataset_path.exists():
-            return pd.read_csv(dataset_path)
-        logging.getLogger(__name__).warning(
-            "Dataset path %s not found. Falling back to synthetic data.",
-            dataset_path,
-        )
+        try:
+            return load_dataset(
+                config.dataset_path,
+                table=config.dataset_table,
+            )
+        except FileNotFoundError:
+            logger.warning(
+                "Dataset path %s not found. Falling back to synthetic data.",
+                config.dataset_path,
+            )
+        except ValueError as exc:
+            logger.warning(
+                "Failed to load dataset %s: %s. Falling back to synthetic data.",
+                config.dataset_path,
+                exc,
+            )
     return generate_synthetic_data()
 
 
